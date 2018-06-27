@@ -37,7 +37,6 @@ void QOUT::qout(QString value)
 {
 	QMutexLocker data_locker(&qout_mutex);
 	text_output.append(value);
-	text_output.append(" ");
 }
 
 void QOUT::clear()

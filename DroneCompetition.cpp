@@ -51,14 +51,31 @@ void  DroneCompetition::panel_update()
 	{
 		QMutexLocker data_locker(&drone_info.data_mutex);
 		status_painter->pitchd = drone_info.attitude.angle_d.pitch_d;
-		status_painter->rolld = drone_info.attitude.angle_d.roll_d;
+		status_painter->rolld = -drone_info.attitude.angle_d.roll_d;
 		status_painter->pitch = drone_info.attitude.angle.pitch;
-		status_painter->roll = drone_info.attitude.angle.roll;
-		status_painter->compassd = -drone_info.attitude.angle_d.yaw_d + 180;
+		status_painter->roll = -drone_info.attitude.angle.roll;
+		status_painter->compassd = -drone_info.attitude.angle_d.yaw_d;
+		//gcy changed
 		
 		test1 = drone_info.test_value.test1;
 		test2 = drone_info.test_value.test2;
 		test3 = drone_info.test_value.test3;
+		for (int i = 0; i < 3; i++) {
+			gyo[i] = drone_info.test_value.gyo[i];
+			acc[i] = drone_info.test_value.acc[i];
+			mag[i] = drone_info.test_value.mag[i];
+		}
+		gps_e = drone_info.test_value.gps_e;
+		gps_n = drone_info.test_value.gps_n;
+		gps_h = drone_info.test_value.gps_h;
+		baro = drone_info.test_value.baro;
+		xest[0] = drone_info.local_position.position.x;
+		yest[0] = drone_info.local_position.position.y;
+		zest[0] = drone_info.local_position.position.z;
+		xest[1] = drone_info.local_position.velocity.vx;
+		yest[1] = drone_info.local_position.velocity.vy;
+		zest[1] = drone_info.local_position.velocity.vz;
+
 	}
 	// Draw
 	status_painter->update();
@@ -66,7 +83,27 @@ void  DroneCompetition::panel_update()
 	ui.label_Test1->setText(QString::number(test1));
 	ui.label_Test2->setText(QString::number(test2));
 	ui.label_Test3->setText(QString::number(test3));
+	ui.acc_x->setText(QString::number(acc[0]));
+	ui.acc_y->setText(QString::number(acc[1]));
+	ui.acc_z->setText(QString::number(acc[2]));
+	ui.gyo_x->setText(QString::number(gyo[0]));
+	ui.gyo_y->setText(QString::number(gyo[1]));
+	ui.gyo_z->setText(QString::number(gyo[2]));
+	ui.mag_x->setText(QString::number(mag[0]));
+	ui.mag_y->setText(QString::number(mag[1]));
+	ui.mag_z->setText(QString::number(mag[2]));
+	ui.gps_e->setText(QString::number(gps_e));
+	ui.gps_n->setText(QString::number(gps_n));
+	ui.gps_h->setText(QString::number(gps_h));
+	ui.baro->setText(QString::number(baro));
 
+	ui.px->setText(QString::number(xest[0]));
+	ui.py->setText(QString::number(yest[0]));
+	ui.pz->setText(QString::number(zest[0]));
+
+	ui.vx->setText(QString::number(xest[1]));
+	ui.vy->setText(QString::number(yest[1]));
+	ui.vz->setText(QString::number(zest[1]));
 }
 
 void DroneCompetition::image_update()
@@ -156,7 +193,7 @@ void DroneCompetition::timer_update()
 		image_update();
 	}
 
-	if (timer_counter % 4 == 0)
+	if (timer_counter % 5 == 0)
 	{
 		QString show_data;
 		// qout
@@ -165,7 +202,8 @@ void DroneCompetition::timer_update()
 			show_data = qout_thread.text_output;
 		}
 		qout_thread.clear();
-		ui.textBrowser->append(show_data);
+		if(show_data.size() > 0)
+			ui.textBrowser->append(show_data);
 	}
 }
 

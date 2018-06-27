@@ -2,6 +2,8 @@
 #include "droneInfo.h"
 #include <iostream>
 
+
+
 using namespace std;
 using namespace msr::airlib;
 
@@ -34,8 +36,6 @@ void ImageProcess::run()
 	while (true)
 	{
 		//msleep(100); // 10Hz Max
-
-		auto mag = client.getMagnetometerdata(0.03);
 
 		/* Add your code here */
 		// Create temperary variables to continue data process and then give the value to "drone_info"

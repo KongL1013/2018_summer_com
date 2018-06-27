@@ -119,11 +119,43 @@ public:
 
 	}global_position;
 
+	struct AngluarSetpoint
+	{
+		bool usingAPI = false;
+		float pitch;
+		float roll;
+		float yaw_rate;
+		float throttle;
+	}angluar_setpoint;
+
+	struct LocalPositionSetpoint
+	{
+		struct Position  // m
+		{
+			double x;
+			double y;
+			double z;
+		}position;
+
+		struct Velocity  // m /s
+		{
+			double vx;
+			double vy;
+			double vz;
+		}velocity;
+
+	}local_position_setpoint;
+
 	struct TestValue
 	{
 		double test1;
 		double test2;
 		double test3;
+		double gyo[3];
+		double acc[3];
+		double mag[3];
+		double gps_n, gps_e, gps_h;
+		double baro;
 	}test_value;
 };
 

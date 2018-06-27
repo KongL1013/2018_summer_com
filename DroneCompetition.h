@@ -37,6 +37,12 @@ private:
 	double test1;
 	double test2;
 	double test3;
+	double acc[3];
+	double gyo[3];
+	double mag[3];
+	double gps_n, gps_e, gps_h;
+	double baro;
+	double zest[2], xest[2], yest[2];
 
 	QImage img_front_rgb;
 	QImage img_front_dep;

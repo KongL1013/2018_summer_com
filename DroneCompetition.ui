@@ -30,91 +30,13 @@
      <attribute name="title">
       <string>Tab 1</string>
      </attribute>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Test1:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_Test1">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>30</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_3">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Test2:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>70</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Test3:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_Test2">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>50</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_Test3">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>70</y>
-        <width>54</width>
-        <height>11</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
      <widget class="QTextBrowser" name="textBrowser">
       <property name="geometry">
        <rect>
-        <x>150</x>
-        <y>10</y>
-        <width>261</width>
-        <height>231</height>
+        <x>60</x>
+        <y>30</y>
+        <width>321</width>
+        <height>201</height>
        </rect>
       </property>
      </widget>
@@ -284,6 +206,500 @@
       <string>Capture</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QLabel" name="label_Test2">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>340</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gyo_z">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>310</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="mag_y">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>170</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="acc_y">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>230</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>230</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>acc_y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="mag_z">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>190</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>170</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mag_y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>0</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GPS N</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>20</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GPS E</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_Test3">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>340</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gps_e">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>20</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gyo_y">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>290</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_Test1">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>340</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="mag_x">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>150</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>270</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>gyo_x</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>210</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>acc_x</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>290</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>gyo_y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gyo_x">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>270</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="acc_z">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>250</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>250</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>acc_z</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="acc_x">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>210</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gps_n">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>0</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_14">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>310</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>gyo_z</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>190</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mag_z</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>150</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mag_x</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gps_h">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>110</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_15">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>110</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GPS h</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="baro">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>90</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_16">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>90</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BARO</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="pz">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>40</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>40</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Z_EST</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="py">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>20</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>0</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X_EST</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_19">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>20</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Y_EST</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="px">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>0</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="vz">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>40</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="vy">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>20</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="vx">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>0</y>
+      <width>54</width>
+      <height>11</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

@@ -1,2 +1,9 @@
-﻿  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.exe
+﻿  estimator.cpp
+estimator.cpp(220): warning C4838: 从“const double”转换到“float”需要收缩转换
+estimator.cpp(220): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(291): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(292): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(337): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(404): warning C4838: 从“double”转换到“float”需要收缩转换
+  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.exe
   DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.pdb (Full PDB)
