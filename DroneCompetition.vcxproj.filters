@@ -63,6 +63,12 @@
     <ClCompile Include="qout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="commander.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="type_methode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DroneCompetition.h">
@@ -105,6 +111,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="qout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="type_methode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="commons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="commander.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

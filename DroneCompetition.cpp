@@ -29,11 +29,13 @@ DroneCompetition::DroneCompetition(QWidget *parent)
 	connect(ui.pushButton_FrontImgRGB_Cap, SIGNAL(clicked()), this, SLOT(pushButton_FrontImgRGB_Cap_Clicked()));
 	connect(ui.pushButton_FrontImgDep_Cap, SIGNAL(clicked()), this, SLOT(pushButton_FrontImgDep_Cap_Clicked()));
 	connect(ui.pushButton_DownImgRGB_Cap, SIGNAL(clicked()), this, SLOT(pushButton_DownImgRGB_Cap_Clicked()));
+	connect(ui.pushButton_FrontImg_Cap, SIGNAL(clicked()), this, SLOT(pushButton_FrontImg_Cap_Clicked()));
 
 	//Settings
 	ui.pushButton_FrontImgRGB_Cap->setEnabled(false);
 	ui.pushButton_FrontImgDep_Cap->setEnabled(false);
 	ui.pushButton_DownImgRGB_Cap->setEnabled(false);
+	ui.pushButton_FrontImg_Cap->setEnabled(false);
 
 	save_img_front_rgb = false;
 	save_img_front_dep = false;
@@ -118,6 +120,7 @@ void DroneCompetition::image_update()
 	if (img_front_rgb.height() > 0)
 	{
 		ui.pushButton_FrontImgRGB_Cap->setEnabled(true);
+		ui.pushButton_FrontImg_Cap->setEnabled(true);
 		QPainter painter(&img_front_rgb);
 		QImage resultImg = img_front_rgb.scaled(ui.label_FrontImage->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		ui.label_FrontImage->setPixmap(QPixmap::fromImage(resultImg));
@@ -139,6 +142,8 @@ void DroneCompetition::image_update()
 	if (img_front_dep.height() > 0)
 	{
 		ui.pushButton_FrontImgDep_Cap->setEnabled(true);
+		ui.pushButton_FrontImg_Cap->setEnabled(true);
+
 		QPainter painter(&img_front_dep);
 		QImage resultImg = img_front_dep.scaled(ui.label_FrontImageDep->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		ui.label_FrontImageDep->setPixmap(QPixmap::fromImage(resultImg));
@@ -218,5 +223,11 @@ void DroneCompetition::pushButton_DownImgRGB_Cap_Clicked()
 }
 void DroneCompetition::pushButton_FrontImgDep_Cap_Clicked()
 {
+	save_img_front_dep = true;
+}
+
+void DroneCompetition::pushButton_FrontImg_Cap_Clicked()
+{
+	save_img_front_rgb = true;
 	save_img_front_dep = true;
 }

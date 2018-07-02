@@ -36,14 +36,17 @@ public:
 	Eigen::Matrix3d Q; // Noise matrix
 	Eigen::Matrix3d H; // p, v, a sensibility. Normally, if you use a sensor, set the corresponding diagonal element to 1, otherwise 0.
 	Eigen::Vector3d std_dev; // Sensor Standard Deviation, for R
-	double spa_weight; // Weight of acc setpoint
-	
+	double spa_weight; // Weight of acc setpoint. Range: (0, 1.0)
+	double p2v_weight; // Weight of using position error to correct velocity. Range: (0, 1.0)
+
 private:
 	Eigen::Matrix3d P; // X covariance matrix
 	Eigen::Vector3d x; // State. p, v, a
 	Eigen::Vector3d z; // Sensor value. p, v, a
 	Eigen::Vector3d K; // Kalman factor
 	Eigen::Matrix3d F; // State transition matrix
+	double last_p;
+	
 };
 
 typedef struct vec3f_s {

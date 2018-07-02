@@ -60,6 +60,7 @@ private slots:
 	void pushButton_FrontImgRGB_Cap_Clicked();
 	void pushButton_FrontImgDep_Cap_Clicked();
 	void pushButton_DownImgRGB_Cap_Clicked();
+	void pushButton_FrontImg_Cap_Clicked();
 };
 
 

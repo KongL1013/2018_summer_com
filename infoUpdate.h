@@ -81,6 +81,8 @@ public:
 	void stop();
 
 	void vector_to_qimage(msr::airlib::vector<uint8_t> &img_vec, QImage &img);
+	void float_vector_to_qimage(msr::airlib::vector<float> &img_vec, QImage &img);
+
 
 private:
 	bool b_stopped;

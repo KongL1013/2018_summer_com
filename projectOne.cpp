@@ -12,6 +12,7 @@ STRICT_MODE_ON
 #include "vehicles/multirotor/api/MultirotorRpcLibClient.hpp"
 #include <iostream>
 #include <chrono>
+#include "positionController.h"
 
 using namespace std;
 using namespace msr::airlib;
@@ -42,6 +43,13 @@ void ProjectOne::run()
 
 	sleep(2); //连接后姿态估计线程会标定当前零漂
 
+
+
+	while (1)
+	{
+		sleep(1);
+	}//for manual control
+
 	/* This is about strategy :D */
 
 	client.enableApiControl(true);
@@ -53,34 +61,32 @@ void ProjectOne::run()
 	{
 		msleep(100);
 	}
-	msleep(500);
+	sleep(2);
 	
 	float pitch, roll, throttle, yaw_rate, duration;
 
 	pitch = 0.0f;
-	roll = 0.f;
-	throttle = 0.9f;
+	roll = 0.0f;
+	throttle = 0.75f;
 	yaw_rate = 0.f;
-	duration = 8.f;
+	duration = 4.f;
+
+	Controller controller("my_controller");
+	/*give position setpoints*/
+	controller.givePosSp(1.0f, 0.0f, 1.0f, 0.5f);  
+
+	/*give velocity setpoints
+	controller.giveVelSp(0.0f, 0.0f, 1.0f, 0.0f);
+	*/
 
 	while (true)
 	{
-		client.enableApiControl(false);
-
 		/* Set angluar control values here */
-		
+		controller.run();
 		/* Direct angular control flight for test */
-		client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration); //Paras unknown meaning
-		msleep(8000);  
-		
-		/* Assign values */
-		{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-			drone_info.angluar_setpoint.pitch = pitch;
-			drone_info.angluar_setpoint.roll = roll;
-			drone_info.angluar_setpoint.throttle = throttle;
-			drone_info.angluar_setpoint.yaw_rate = yaw_rate;
-		}
+		//client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration); //Paras unknown meaning
+
+		msleep(duration * 1000);
 
 		/* Stop watch dog */
 		{

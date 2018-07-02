@@ -33,9 +33,9 @@
      <widget class="QTextBrowser" name="textBrowser">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>30</x>
         <y>30</y>
-        <width>321</width>
+        <width>381</width>
         <height>201</height>
        </rect>
       </property>
@@ -86,7 +86,7 @@
     <widget class="QPushButton" name="pushButton_FrontImgRGB_Cap">
      <property name="geometry">
       <rect>
-       <x>360</x>
+       <x>320</x>
        <y>0</y>
        <width>75</width>
        <height>23</height>
@@ -94,6 +94,19 @@
      </property>
      <property name="text">
       <string>Capture</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_FrontImg_Cap">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>0</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Capture 2</string>
      </property>
     </widget>
    </widget>

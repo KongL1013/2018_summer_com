@@ -157,5 +157,12 @@ public:
 		double gps_n, gps_e, gps_h;
 		double baro;
 	}test_value;
+
+	struct GroundTruth
+	{
+		double px;
+		double py;
+		double pz;
+	}ground_truth;
 };
 

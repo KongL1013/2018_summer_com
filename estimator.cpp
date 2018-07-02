@@ -27,7 +27,9 @@ const float w_mag = 0.4f;
 const float w_acc = 0.01f;
 const float w_mag_full = 0.5f;
 const double w_acc_pos_vel = 0.8;
-const float w_motor_output = 0.2f;
+const float w_motor_output = 0.4f;	//电机输出的反馈修正权重
+
+const double w_acc_bias_xy = 0.001;
 
 const double w_z_baro_p = 1.0;
 const double w_z_baro_v = 1.0;
@@ -43,6 +45,9 @@ bool isUsingAPI = false;
 double x_est[2] = { 0.0, 0.0 };
 double y_est[2] = { 0.0, 0.0 };
 double z_est[2] = { 0.0, 0.0 };
+double lastX = 0.0;
+double lastY = 0.0;
+double lastZ = 0.0;
 
 double corr_baro[2] = { 0.0 , 0.0 };
 double corr_gps[3][2] = {
@@ -83,6 +88,15 @@ void print3num(double a, double b, double c) {
 		QString::number(c) + "\n");
 }
 
+void print4num(double a, double b, double c, double d) {
+	show_string(
+		QString::number(a) + "\t" +
+		QString::number(b) + "\t" +
+		QString::number(c) + "\t" +
+		QString::number(d) + "\n"
+		);
+}
+
 void Estimator::run()
 {
 	vec3f_t corr;
@@ -106,7 +120,6 @@ void Estimator::run()
 	dtTimer.start();
 
 	/**初始化采集1s的数据*/
-
 	initializationClock.start();
 	bool blInitilaized = false;
 	int initCount = 0;
@@ -206,6 +219,11 @@ void Estimator::run()
 	//陀螺仪原点
 	double gyro_bias[3] = { gyroBiases[0] ,gyroBiases[1] ,gyroBiases[2] };
 
+	//加速度计零漂
+	double acc_bias[3] = { accBiases[0], accBiases[1], 0 };
+	show_string(QString::number(accBiases[0]) + "\n");
+	show_string(QString::number(accBiases[1]) + "\n");
+
 	//重力加速度的绝对值
 	const double acc_gravity = sqrt(
 		accBiases[0] * accBiases[0] +
@@ -232,20 +250,58 @@ void Estimator::run()
 	// Kalman filter initialize
 	PVAKF pva_x;
 	PVAKF pva_y;
+	PVAKF pva_z;
 
-	pva_x.std_dev(0) = 1.15; //p
-	pva_x.std_dev(1) = 0.5; //v 
-	pva_x.std_dev(2) = 0.032;//p
+
+	pva_x.std_dev(0) = 2.15; //p
+	pva_x.std_dev(1) = 1.0; //v 
+	pva_x.std_dev(2) = 0.032;//a
 	pva_x.spa_weight = 0.0;
+	pva_x.p2v_weight = 0.02;
 
-	pva_y.std_dev(0) = 1.0; //p
-	pva_y.std_dev(1) = 0.5; //v 
+	pva_y.std_dev(0) = 2.0; //p
+	pva_y.std_dev(1) = 1.0; //v 
 	pva_y.std_dev(2) = 0.005;//a
 	pva_y.spa_weight = 0.0;
+	pva_y.p2v_weight = 0.015;
 
-	// int gps_delay_ms = 200;
+	pva_z.std_dev(0) = 0.2; //p
+	pva_z.std_dev(1) = 1.0; //v 
+	pva_z.std_dev(2) = 0.02;//a
+	pva_z.spa_weight = 0.0;
+	pva_z.p2v_weight = 0.005;
 
-	
+	// Parameters to sovle delay issue
+	const int gps_delay_ms = 200;
+	const int acc_delay_ms = 30;
+	const int buf_length = gps_delay_ms / acc_delay_ms;
+	double acc_buffer[buf_length][2]; // x, y only
+	double time_buffer[buf_length];
+	int delay_counter = 0;
+
+	double gps_buffer[5][3];
+	double gps_last[3];
+
+	double ground_x;
+	double ground_y;
+	double ground_z;
+
+	double fake_vx = 0.0;
+	double fake_vy = 0.0;
+	double fake_vz = 0.0;
+
+	// Initialize gps buffer & last
+	for (int i = 0; i < 5; i++)
+	{
+		gps_buffer[i][0] = 0.0;
+		gps_buffer[i][1] = 0.0;
+		gps_buffer[i][2] = 0.0;
+	}
+	gps_last[0] = 0.0;
+	gps_last[1] = 0.0;
+	gps_last[2] = 0.0;
+
+
 	while (true)
 	{
 		//查询数据是否更新
@@ -273,6 +329,10 @@ void Estimator::run()
 			imu = drone_info.imu;
 			gps = drone_info.global_position;
 			motorOutput = drone_info.angluar_setpoint;
+
+			ground_x = drone_info.ground_truth.px;
+			ground_y = drone_info.ground_truth.py;
+			ground_z = drone_info.ground_truth.pz;
 		}
 
 		//时间流逝
@@ -334,30 +394,33 @@ void Estimator::run()
 		up_body.y = -(2.0f * (att_local.Q.q2 * att_local.Q.q3 + att_local.Q.q0 * att_local.Q.q1));
 		up_body.z = -(1.0f - ((att_local.Q.q1 * att_local.Q.q1 + att_local.Q.q2 * att_local.Q.q2) * 2.0f));
 
-		vec3f_t grav_acc = { imu.linear_acc.acc_x, imu.linear_acc.acc_y, imu.linear_acc.acc_z };
+		vec3f_t grav_acc = { imu.linear_acc.acc_x - acc_bias[0], imu.linear_acc.acc_y - acc_bias[1], imu.linear_acc.acc_z };
+		vec3f_t test_grav_no_motor;
 		//添加电机加速度
-		if (isUsingAPI) {
-			vec3f_t motor_acc_body = { 0, 0, -motorOutput.throttle * 20 };
-			vec3f_t motor_acc_earth;
-			body2earth(&att_local.R, &motor_acc_body, &motor_acc_earth, 3);
-			motor_acc_earth.z += acc_gravity;
-			earth2body(&att_local.R, &motor_acc_earth, &motor_acc_body, 3);
-			for (int i = 0; i < 3; i++) {
-				grav_acc.v[i] -= motor_acc_body.v[i];
-			}
-		}
+		//if (isUsingAPI) {
+		//	vec3f_t motor_acc_body = { 0, 0, -motorOutput.throttle * 20 };
+		//	vec3f_t motor_acc_earth;
+		//	body2earth(&att_local.R, &motor_acc_body, &motor_acc_earth, 3);
+		//	motor_acc_earth.z += acc_gravity;
+		//	earth2body(&att_local.R, &motor_acc_earth, &motor_acc_body, 3);
+		//	for (int i = 0; i < 3; i++) {
+		//		test_grav_no_motor.v[i] = grav_acc.v[i] - motor_acc_body.v[i];
+		//	}
+		//	print3num(test_grav_no_motor.x, test_grav_no_motor.y, test_grav_no_motor.z);
+		//}
 		
 		vec3f_normalize(&grav_acc);
 		vec3f_t acc_err;
 		vec3f_cross(&grav_acc, &up_body, &acc_err);
 		if (USING_ACC_EST_ALT) {
 			for (int i = 0; i < 3; i++) {
-				if (isUsingAPI) {
-					corr.v[i] += acc_err.v[i] * w_acc * 10;
-				}
-				else {
-					corr.v[i] += acc_err.v[i] * w_acc;
-				}
+				corr.v[i] += acc_err.v[i] * w_acc;
+				//if (isUsingAPI) {
+				//	corr.v[i] += acc_err.v[i] * w_acc * 10;
+				//}
+				//else {
+				//	corr.v[i] += acc_err.v[i] * w_acc;
+				//}
 			}
 		}
 		
@@ -366,6 +429,7 @@ void Estimator::run()
 		if (isUsingAPI) {
 			corr.P += (motorOutput.pitch - att_local.Euler.P) * w_motor_output;
 			corr.R += (motorOutput.roll - att_local.Euler.R) * w_motor_output;
+			// print3num(corr.R, motorOutput.roll, att_local.Euler.R);
 		}
 
 		if (spinRate < 0.175 && FIX_GYRO_BIAS) {
@@ -401,7 +465,7 @@ void Estimator::run()
 
 		/**开始位置估计*/
 		vec3f_t acc_earth;
-		vec3f_t acc_body = { imu.linear_acc.acc_x, imu.linear_acc.acc_y, imu.linear_acc.acc_z };
+		vec3f_t acc_body = { imu.linear_acc.acc_x - acc_bias[0], imu.linear_acc.acc_y - acc_bias[1], imu.linear_acc.acc_z };
 		body2earth(&att_local.R, &acc_body, &acc_earth, 3);
 		acc_earth.v[2] += acc_gravity;	//去掉重力加速度得到运动加速度
 
@@ -416,42 +480,127 @@ void Estimator::run()
 
 		/* New position estimator using KF */
 		/* GPS position NED and acc NED are used */
-		
-		// X, a,v,p Kalman filter
 		double ax, vx, px;
 		double ay, vy, py;
-		pva_x.get_predict_value(gps_x, 0.0, (double)acc_earth.v[0], 0.0, dt, px, vx, ax);
-		pva_y.get_predict_value(gps_y, 0.0, (double)acc_earth.v[1], 0.0, dt, py, vy, ay);
+		double az, vz, pz;
 
-		print3num(gps_x, px, (double)acc_earth.v[0]);
+		for (int i = 0; i < 2; i++) {
+			if (abs(acc_earth.v[i]) < 0.05) {
+				acc_earth.v[i] = 0.0;
+			}
+		}
+
+		// Data buffer initialize
+		if (delay_counter < buf_length) 
+		{
+			px = 0.0; py = 0.0; pz = 0.0;
+			vx = 0.0; vy = 0.0; vz = 0.0;
+			ax = 0.0; ay = 0.0; az = 0.0;
+
+			// Fill acc buffer
+			acc_buffer[delay_counter][0] = (double)acc_earth.v[0];
+			acc_buffer[delay_counter][1] = (double)acc_earth.v[1];
+			time_buffer[delay_counter] = dt;
+
+			delay_counter++;
+
+			// Update GPS buffer
+			for (int i = 0; i < 4; i++)
+			{
+				gps_buffer[i][0] = gps_buffer[i + 1][0];
+				gps_buffer[i][1] = gps_buffer[i + 1][1];
+				gps_buffer[i][2] = gps_buffer[i + 1][2];
+			}
+			gps_buffer[4][0] = gps_x;
+			gps_buffer[4][1] = gps_y;
+			gps_buffer[4][2] = gps.gps_height;
+		}
+		else
+		{
+			// Update acc buffer
+			for (int i = 0; i < buf_length - 1; i++)
+			{
+				acc_buffer[i][0] = acc_buffer[i + 1][0];
+				acc_buffer[i][1] = acc_buffer[i + 1][1];
+				time_buffer[i] = time_buffer[i + 1];
+			}
+			acc_buffer[buf_length - 1][0] = (double)acc_earth.v[0];
+			acc_buffer[buf_length - 1][1] = (double)acc_earth.v[1];
+			time_buffer[buf_length - 1] = dt;
+
+			// Update GPS buffer
+			for (int i = 0; i < 4; i++)
+			{
+				gps_buffer[i][0] = gps_buffer[i + 1][0];
+				gps_buffer[i][1] = gps_buffer[i + 1][1];
+				gps_buffer[i][2] = gps_buffer[i + 1][2];
+			}
+			gps_buffer[4][0] = gps_x;
+			gps_buffer[4][1] = gps_y;
+			gps_buffer[4][2] = gps.gps_height;
+
+			// Generate a fake velocity 
+			double gps_avg_x = 0.0;
+			double gps_avg_y = 0.0;
+			double gps_avg_z = 0.0;
+
+			for (int i = 0; i < 5; i++)
+			{
+				gps_avg_x += gps_buffer[i][0];
+				gps_avg_y += gps_buffer[i][1];
+				gps_avg_z += gps_buffer[i][2];
+			}
+			gps_avg_x = gps_avg_x / 5.0;
+			gps_avg_y = gps_avg_y / 5.0;
+			gps_avg_z = gps_avg_z / 5.0;
+
+			fake_vx = (fake_vx + acc_buffer[0][0] * dt) * 0.998 + (gps_avg_x - gps_last[0]) / dt * 0.002; // delayed 200ms
+			fake_vy = (fake_vy + acc_buffer[0][1] * dt) * 0.998 + (gps_avg_y - gps_last[1]) / dt * 0.002; // delayed 200ms
+			fake_vz = (fake_vz + acc_buffer[0][2] * dt) * 0.995 + (gps_avg_z - gps_last[2]) / dt * 0.005; // delayed 200ms
+
+			gps_last[0] = gps_avg_x;
+			gps_last[1] = gps_avg_y;
+			gps_last[2] = gps_avg_z;
+
+			// Kalman filter
+			pva_x.get_predict_value(gps_x, fake_vx, acc_buffer[0][0], 0.0, dt, px, vx, ax);
+			pva_y.get_predict_value(gps_y, fake_vy, acc_buffer[0][1], 0.0, dt, py, vy, ay);
+			pva_z.get_predict_value(baro_now / 2.0, fake_vz, (double)acc_earth.v[2], 0.0, dt, pz, vz, az);
+
+			// Using acc to make up delayed data
+			vx = fake_vx;
+			vy = fake_vy;
+			vz = fake_vz;
+
+			for (int i = 1; i < buf_length; i++)
+			{
+				px += 0.5 * acc_buffer[i][0] * time_buffer[i] * time_buffer[i];
+				py += 0.5 * acc_buffer[i][1] * time_buffer[i] * time_buffer[i];
+
+				vx += acc_buffer[i][0] * time_buffer[i];
+				vy += acc_buffer[i][1] * time_buffer[i];
+				vz += acc_buffer[i][2] * time_buffer[i];
+			}
+			print4num(fake_vx, vx, px, gps_x);
+		}
+		// print3num(fake_vx, vx, px);
+		
+		
+
+		/*vec3f_t coor_acc_bias_earth = { px - lastX ,py - lastY ,pz - lastZ };
+		vec3f_t coor_acc_bias_body;
+		earth2body(&att_local.R, &coor_acc_bias_earth, &coor_acc_bias_body, 3);*/
+		//acc_bias[0] -= coor_acc_bias_body.v[0] * w_acc_bias_xy * dt;
+		//acc_bias[1] -= coor_acc_bias_body.v[1] * w_acc_bias_xy * dt;
+		//acc_bias[2] -= coor_acc_bias_body.v[2] * w_acc_bias_xy * dt;
+
+		//print3num(gps_x, px, ground_x);
+		//print3num(imu.linear_acc.acc_x, imu.linear_acc.acc_y, imu.linear_acc.acc_z);
+		/*print3num(acc_bias[0], acc_bias[1], acc_bias[2]);
+		print3num(acc_body.v[0], acc_body.v[1], acc_body.v[2]);
+		print3num(acc_earth.x, acc_earth.y, acc_earth.z);*/
 
 		//print3num(gps_x, gps_y, gps.gps_height - gps_height_home);
-
-
-		/* The following is the old position estimator*/
-		//corr_gps[0][0] = gps_x - x_est[0];
-		//corr_gps[1][0] = gps_y - y_est[0];
-		//corr_gps[0][1] = (gps_x - gps_last_x) / dt - x_est[1]; //TODO 直接差分得到的速度,要弃用
-		//corr_gps[1][1] = (gps_y - gps_last_y) / dt - y_est[1]; //TODO 直接差分得到的速度,要弃用
-		//gps_last_x = gps_x;
-		//gps_last_y = gps_y;
-
-		//使用加速度估计得到位置和速度
-		//inertial_filter_predict(dt, x_est, acc_earth.x);
-		//inertial_filter_predict(dt, y_est, acc_earth.y);
-		//inertial_filter_predict(dt, z_est, acc_earth.z);
-
-		/*inertial_filter_correct(corr_baro[0], dt, z_est, 0, w_z_baro_p);
-		inertial_filter_correct(corr_baro[1], dt, z_est, 1, w_z_baro_v);
-		inertial_filter_correct(corr_gps[0][0], dt, x_est, 0, w_xy_gps_p);
-		inertial_filter_correct(corr_gps[1][0], dt, y_est, 0, w_xy_gps_p);
-		inertial_filter_correct(corr_gps[0][1], dt, x_est, 1, w_xy_gps_v);
-		inertial_filter_correct(corr_gps[1][1], dt, y_est, 1, w_xy_gps_v);*/
-		/* End of the old position estimator */
-
-		QString temp = QString::number(dt) + "\n";
-		//show_string(std::move(temp));
-		// print3num(up_body.x, up_body.y, up_body.z);
 
 		{
 			QMutexLocker data_locker(&drone_info.data_mutex);
@@ -479,14 +628,14 @@ void Estimator::run()
 			drone_info.test_value.baro = baro_now;
 
 			//估计的位置
-			drone_info.local_position.position.x = x_est[0];
-			drone_info.local_position.position.y = y_est[0];
-			drone_info.local_position.position.z = z_est[0];
+			drone_info.local_position.position.x = 0.0; //px;
+			drone_info.local_position.position.y = 0.0; //py;
+			drone_info.local_position.position.z = 0.0; //pz;
 
 			//估计的速度
-			drone_info.local_position.velocity.vx = x_est[1];
-			drone_info.local_position.velocity.vy = y_est[1];
-			drone_info.local_position.velocity.vz = z_est[1];
+			drone_info.local_position.velocity.vx = 0.0;// vx;
+			drone_info.local_position.velocity.vy = 0.0; //vy;
+			drone_info.local_position.velocity.vz = 0.0; //  vz;
 
 			//估计的姿态
 			drone_info.attitude.angle.roll = att_local.Euler.x;
@@ -494,9 +643,9 @@ void Estimator::run()
 			drone_info.attitude.angle.yaw = att_local.Euler.z;
 
 
-			drone_info.test_value.test1 = acc_earth.v[0];
-			drone_info.test_value.test2 = acc_earth.v[1];
-			drone_info.test_value.test3 = acc_earth.v[2];
+			drone_info.test_value.test1 = att_local.Euler.x;
+			drone_info.test_value.test2 = att_local.Euler.y;
+			drone_info.test_value.test3 = att_local.Euler.z;
 
 			drone_info.degree_values_cal();
 		}
@@ -671,15 +820,18 @@ PVAKF::PVAKF()
 
 	H = Matrix3d::Zero();
 	H(0, 0) = 1.0; // Enable gps
-	H(1, 1) = 0.0; // Disable velocity sensor
+	H(1, 1) = 1.0; // Disable velocity sensor
 	H(2, 2) = 1.0; // Enable acc
 
 	std_dev = Vector3d::Zero();
 	spa_weight = 0.0;
+	p2v_weight = 0.0;
 
 	x = Vector3d::Zero();
 	z = Vector3d::Zero();
 	K = Vector3d::Zero();
+
+	last_p = 0.0;
 }
 
 void PVAKF::get_predict_value(double p, double v, double a, double spa, double dt, double &rp, double &rv, double &ra)
@@ -690,26 +842,33 @@ void PVAKF::get_predict_value(double p, double v, double a, double spa, double d
 	F(0, 2) = 0.5 * dt * dt;
 	F(1, 2) = dt;
 
-	if (spa_weight > 0.0001)
+
+	Vector3d sp_influence = Vector3d::Zero();
+	if (spa_weight > 0.01)
 	{
-		double delt_a = spa - a;
-		Vector3d sp_influence;
+		double delt_a = spa - a;	
 		sp_influence(0) = 0.5 * dt * dt * spa_weight * delt_a;
 		sp_influence(1) = dt * spa_weight * delt_a;
-		sp_influence(2) = spa_weight * delt_a;
-		x = F * x + sp_influence; // KF 1
+		sp_influence(2) = spa_weight * delt_a;	
 	}
-	else
+	x = F * x + sp_influence; // KF 1
+	//x(1) = x(1) * 0.9 + 0.1 * v;  
+
+	double dif_v = (p - last_p) / dt;
+
+	if (p2v_weight > 0.0)
 	{
-		x = F * x; // KF 1
+		x(1) = (1.0 - p2v_weight) * x(1) + p2v_weight * dif_v;
 	}
+
 	
 	P = F * P * F.transpose() + Q; // KF 2
 
 	// Correct
 	z(0) = p;
-	z(1) = v;
+	z(1) = dif_v; //v;
 	z(2) = a;
+	last_p = p;
 
 	for (int i = 0; i < 3; i++)
 	{

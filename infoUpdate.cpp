@@ -262,38 +262,41 @@ void ImgRetriever::run()
 
 		std::vector<ImageCaptureBase::ImageRequest> requests;
 		ImageCaptureBase::ImageRequest req;
+
 		req.camera_id = 0;
 		req.image_type = ImageCaptureBase::ImageType::Scene;
+		req.pixels_as_float = false;
 		requests.push_back(req);
-		//req.camera_id = 0;
-		//req.image_type = ImageCaptureBase::ImageType::DepthVis;
-		//req.pixels_as_float = true;
-		//requests.push_back(req);
+
 		req.camera_id = 3;
-		req.image_type = ImageCaptureBase::ImageType::Scene;
+		req.image_type = ImageCaptureBase::ImageType::Scene;                                               
+		req.pixels_as_float = false;
 		requests.push_back(req);
+
+		std::vector<ImageCaptureBase::ImageRequest> depth_request;
+		ImageCaptureBase::ImageRequest req2;
+
+		req2.camera_id = 0;
+		req2.image_type = ImageCaptureBase::ImageType::DepthPerspective;
+		req2.pixels_as_float = true;
+		depth_request.push_back(req2);
+
+		auto depth_image = client.simGetImages(depth_request);
+
 		auto images = client.simGetImages(requests);
-
-
+		// ImageCaptureBase::ImageResponse
 		current_time.start();
 		long int time_stamp1 = current_time.msec() + current_time.second() * 1000 + (long int)current_time.minute() * 1000 * 60;
-
-		//auto image_front_dep = client.simGetImage(0, ImageCaptureBase::ImageType::DepthVis);
-		//current_time.start();
-		//long int time_stamp2 = current_time.msec() + current_time.second() * 1000 + (long int)current_time.minute() * 1000 * 60;
-
-		//auto image_down_rgb = client.simGetImage(3, ImageCaptureBase::ImageType::Scene); //4 is back camera, 3 is downside
-		//current_time.start();
-		//long int time_stamp3 = current_time.msec() + current_time.second() * 1000 + (long int)current_time.minute() * 1000 * 60;
-
 
 		/* Convert data */
 		QImage q_image_front_rgb;
 		vector_to_qimage(images[0].image_data_uint8, q_image_front_rgb);
-		QImage q_image_front_dep;
-		vector_to_qimage(images[1].image_data_uint8, q_image_front_dep);
 		QImage q_image_down_rgb;
-		//vector_to_qimage(images[2].image_data_uint8, q_image_down_rgb);
+		vector_to_qimage(images[1].image_data_uint8, q_image_down_rgb);
+
+		QImage q_image_front_dep;
+		float_vector_to_qimage(depth_image[0].image_data_float, q_image_front_dep);
+
 		
 		{
 			QMutexLocker data_locker(&drone_info.data_mutex);
@@ -304,6 +307,10 @@ void ImgRetriever::run()
 			//drone_info.images.time_stamp_front_depth = time_stamp2;
 			//drone_info.images.time_stamp_down_rgb = time_stamp3;
 			drone_info.images.updated = true;
+		
+			drone_info.ground_truth.px = images[0].camera_position(0);
+			drone_info.ground_truth.py = images[0].camera_position(1);
+			drone_info.ground_truth.pz = images[0].camera_position(2);
 		}
 
 		/* Stop watch dog */
@@ -322,3 +329,30 @@ void ImgRetriever::vector_to_qimage(msr::airlib::vector<uint8_t> &img_vec, QImag
 	QImageReader reader(&buffer);
 	img = reader.read();
 }
+
+void ImgRetriever::float_vector_to_qimage(msr::airlib::vector<float> &img_vec, QImage &img)
+{
+	// Store depth from 0 - 5.0m.
+	// Resolution: 0.02m
+
+	unsigned char * c_data = new unsigned char[img_vec.size() * 4];
+	for (int i = 0, j = 0; i < img_vec.size(); ++i, j += 4)
+	{
+		unsigned char temp_char;
+		if (img_vec[i] < 0.f)
+			temp_char = 0;
+		else if (img_vec[i] >= 5.f)
+			temp_char = 255;
+		else
+		{
+			temp_char = (unsigned char)((10.f - img_vec[i]) / 5.f * 255.f);
+		}
+		
+		c_data[j] = c_data[j + 1] = c_data[j + 2] = temp_char;
+		c_data[j + 4] = ~0;
+	}
+	//QImage image(c_data, 64, 48, QImage::Format_ARGB32_Premultiplied);
+	QImage image(c_data, 64, 48, QImage::Format_ARGB32);
+	img = image;
+}
+

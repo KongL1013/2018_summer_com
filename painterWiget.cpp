@@ -207,7 +207,11 @@ void StatusPainter::paintEvent(QPaintEvent *event)
     painter.setBrush(QBrush(Qt::NoBrush));
     QRectF compass_rect(painting_area_width/2-15, painting_area_height-20,30,12);
     painter.drawRect(compass_rect);
-    painter.drawText(compass_rect, Qt::AlignCenter,QString::number(360-(int)compassd));
+	int num2draw = -compassd;
+	if (num2draw < 0) {
+		num2draw += 360;
+	}
+    painter.drawText(compass_rect, Qt::AlignCenter,QString::number(num2draw));
 
   
     painter.setPen(QPen(Qt::red,2));

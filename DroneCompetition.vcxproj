@@ -121,6 +121,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="attitude_estimator.cpp" />
+    <ClCompile Include="commander.cpp" />
     <ClCompile Include="DroneCompetition.cpp" />
     <ClCompile Include="droneInfo.cpp" />
     <ClCompile Include="estimator.cpp" />
@@ -131,6 +132,7 @@
     <ClCompile Include="positionController.cpp" />
     <ClCompile Include="projectOne.cpp" />
     <ClCompile Include="qout.cpp" />
+    <ClCompile Include="type_methode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DroneCompetition.h" />
@@ -143,6 +145,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="attitude_estimator.h" />
+    <ClInclude Include="commander.h" />
+    <ClInclude Include="commons.h" />
     <ClInclude Include="droneInfo.h" />
     <ClInclude Include="estimator.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
@@ -152,9 +156,11 @@
     <ClInclude Include="imageProcess.h" />
     <ClInclude Include="infoUpdate.h" />
     <ClInclude Include="painterWiget.h" />
+    <ClInclude Include="pid.h" />
     <ClInclude Include="positionController.h" />
     <ClInclude Include="projectOne.h" />
     <ClInclude Include="qout.h" />
+    <ClInclude Include="type_methode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
