@@ -64,6 +64,12 @@ void Controller::run()
 	duration = 4.f;
 	int control_cnt = 0;
 	float control_thres = 0.1;
+
+	{
+		QMutexLocker data_locker(&drone_info.data_mutex);
+		drone_info.angluar_setpoint.usingAPI = true;
+	}
+	
 	while (true)
 	{
 		msleep(20); // 50Hz Max
@@ -72,56 +78,58 @@ void Controller::run()
 		// Don't forget to add lock
 		// e.g.
 		
-		 {
-		    QMutexLocker data_locker(&drone_info.data_mutex);
+		{
+			QMutexLocker data_locker(&drone_info.data_mutex);
 			droneInfo2Vector3f(drone_info, &posEst, &velEst);  //类型转换，得到Eigen向量方便运算
+		}
 			
-			if (control_cnt == 0)
-			{
-				for (int i = 0; i < 3; ++i) {
-					posSptmp[i] = m_posSp[i];
-				}
-				posDiff = vec3f_minus(&posSptmp, &posEst);
-				vec3f_devide_number(&posDiff, duration);	//控制点之间的间隔
-				for (int i = 0; i < 3; ++i) {
-					posSptmp[i] = posEst[i];
-				}
-				drone_info.angluar_setpoint.usingAPI = true;
+		if (control_cnt == 0)
+		{
+			for (int i = 0; i < 3; ++i) {
+				posSptmp[i] = m_posSp[i];
 			}
-
-			if (!isPosControl)  //速度控制
-			{
-				float vx, vy, vz;
-				giveVelSp(vx, vy, vz, 0.0f);
+			posDiff = vec3f_minus(&posSptmp, &posEst);
+			vec3f_devide_number(&posDiff, duration);	//控制点之间的间隔
+			for (int i = 0; i < 3; ++i) {
+				posSptmp[i] = posEst[i];
 			}
+		}
 
-			if (vec3f_length(&posDiff) <= control_thres)  //接近（认为到达）目标，hover
-			{
-				/*hover*/
+		if (!isPosControl)  //速度控制
+		{
+			float vx, vy, vz;
+			giveVelSp(vx, vy, vz, 0.0f);
+		}
 
-			}
+		if (vec3f_length(&posDiff) <= control_thres)  //接近（认为到达）目标，hover
+		{
+			/*hover*/
 
-			vec3f_add(&posSptmp, &posDiff);  //每次更新控制点
-			control(posEst, velEst, posSptmp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
-			control_cnt++;
+		}
 
-			/*控制器输出结果*/
-			pitch = Output(0);
-			roll = Output(0);
-			yaw_rate = 0.0f;
-			throttle = Output(3);
+		vec3f_add(&posSptmp, &posDiff);  //每次更新控制点
+		control(posEst, velEst, posSptmp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
+		control_cnt++;
+
+		/*控制器输出结果*/
+		pitch = Output(0);
+		roll = Output(0);
+		yaw_rate = 0.0f;
+		throttle = Output(3);
 			
 			
-			client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration);
+		client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration);
 
-			/* Assign values */ 
-			//LOCK????
+		/* Assign values */ 
+		//LOCK????
+		{
+			QMutexLocker data_locker(&drone_info.data_mutex);
 			drone_info.angluar_setpoint.pitch = pitch;
 			drone_info.angluar_setpoint.roll = roll;
 			drone_info.angluar_setpoint.yaw_rate = 0.0f;
 			drone_info.angluar_setpoint.throttle = throttle;
 			
-		 }
+		}
 		
 		/* Stop watch dog */
 		{

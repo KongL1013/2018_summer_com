@@ -275,7 +275,7 @@ void Estimator::run()
 	const int gps_delay_ms = 200;
 	const int acc_delay_ms = 30;
 	const int buf_length = gps_delay_ms / acc_delay_ms;
-	double acc_buffer[buf_length][2]; // x, y only
+	double acc_buffer[buf_length][3]; // x, y, z
 	double time_buffer[buf_length];
 	int delay_counter = 0;
 
@@ -309,7 +309,9 @@ void Estimator::run()
 		while (!got_data) {
 			{
 				QMutexLocker data_locker(&drone_info.data_mutex);
-				isUsingAPI = drone_info.angluar_setpoint.usingAPI;
+
+				// NOTE: CHANGE IF USE API !!!
+				isUsingAPI = true;  // = drone_info.angluar_setpoint.usingAPI; 
 
 				got_data = drone_info.imu.updated;
 				got_data &= drone_info.mag.updated;
@@ -500,6 +502,8 @@ void Estimator::run()
 			// Fill acc buffer
 			acc_buffer[delay_counter][0] = (double)acc_earth.v[0];
 			acc_buffer[delay_counter][1] = (double)acc_earth.v[1];
+			acc_buffer[delay_counter][2] = (double)acc_earth.v[2];
+
 			time_buffer[delay_counter] = dt;
 
 			delay_counter++;
@@ -522,10 +526,12 @@ void Estimator::run()
 			{
 				acc_buffer[i][0] = acc_buffer[i + 1][0];
 				acc_buffer[i][1] = acc_buffer[i + 1][1];
+				acc_buffer[i][2] = acc_buffer[i + 1][2];
 				time_buffer[i] = time_buffer[i + 1];
 			}
 			acc_buffer[buf_length - 1][0] = (double)acc_earth.v[0];
 			acc_buffer[buf_length - 1][1] = (double)acc_earth.v[1];
+			acc_buffer[buf_length - 1][2] = (double)acc_earth.v[2];
 			time_buffer[buf_length - 1] = dt;
 
 			// Update GPS buffer
@@ -554,9 +560,9 @@ void Estimator::run()
 			gps_avg_y = gps_avg_y / 5.0;
 			gps_avg_z = gps_avg_z / 5.0;
 
-			fake_vx = (fake_vx + acc_buffer[0][0] * dt) * 0.998 + (gps_avg_x - gps_last[0]) / dt * 0.002; // delayed 200ms
-			fake_vy = (fake_vy + acc_buffer[0][1] * dt) * 0.998 + (gps_avg_y - gps_last[1]) / dt * 0.002; // delayed 200ms
-			fake_vz = (fake_vz + acc_buffer[0][2] * dt) * 0.995 + (gps_avg_z - gps_last[2]) / dt * 0.005; // delayed 200ms
+			fake_vx = (fake_vx + acc_buffer[0][0] * dt) * 0.99 + (gps_avg_x - gps_last[0]) / dt * 0.01; // delayed 200ms
+			fake_vy = (fake_vy + acc_buffer[0][1] * dt) * 0.99 + (gps_avg_y - gps_last[1]) / dt * 0.01; // delayed 200ms
+			fake_vz = (fake_vz + acc_buffer[0][2] * dt) * 0.99 + (gps_avg_z - gps_last[2]) / dt * 0.01; // delayed 200ms
 
 			gps_last[0] = gps_avg_x;
 			gps_last[1] = gps_avg_y;
@@ -565,7 +571,8 @@ void Estimator::run()
 			// Kalman filter
 			pva_x.get_predict_value(gps_x, fake_vx, acc_buffer[0][0], 0.0, dt, px, vx, ax);
 			pva_y.get_predict_value(gps_y, fake_vy, acc_buffer[0][1], 0.0, dt, py, vy, ay);
-			pva_z.get_predict_value(baro_now / 2.0, fake_vz, (double)acc_earth.v[2], 0.0, dt, pz, vz, az);
+			//pva_z.get_predict_value(baro_now / 2.0, fake_vz, acc_buffer[0][2], 0.0, dt, pz, vz, az);
+			pz = baro_now / 2.0;
 
 			// Using acc to make up delayed data
 			vx = fake_vx;
@@ -581,9 +588,10 @@ void Estimator::run()
 				vy += acc_buffer[i][1] * time_buffer[i];
 				vz += acc_buffer[i][2] * time_buffer[i];
 			}
-			print4num(fake_vx, vx, px, gps_x);
+			print4num(fake_vz, vz, pz, baro_now / 2.0);
 		}
-		// print3num(fake_vx, vx, px);
+		print3num(fake_vx, px, 1);
+		print3num(fake_vy, py, 2);
 		
 		
 
@@ -628,14 +636,14 @@ void Estimator::run()
 			drone_info.test_value.baro = baro_now;
 
 			//估计的位置
-			drone_info.local_position.position.x = 0.0; //px;
-			drone_info.local_position.position.y = 0.0; //py;
-			drone_info.local_position.position.z = 0.0; //pz;
+			drone_info.local_position.position.x = px;
+			drone_info.local_position.position.y = py;
+			drone_info.local_position.position.z = pz;
 
 			//估计的速度
-			drone_info.local_position.velocity.vx = 0.0;// vx;
-			drone_info.local_position.velocity.vy = 0.0; //vy;
-			drone_info.local_position.velocity.vz = 0.0; //  vz;
+			drone_info.local_position.velocity.vx = vx;
+			drone_info.local_position.velocity.vy = vy;
+			drone_info.local_position.velocity.vz = vz;
 
 			//估计的姿态
 			drone_info.attitude.angle.roll = att_local.Euler.x;
