@@ -12,9 +12,9 @@
 
 #include "attitude_estimator.h"
 
-#define MAG_EST_ALL false //flase: 只估计yaw  true: 修正3个角度
+#define MAG_EST_ALL true //flase: 只估计yaw  true: 修正3个角度
 #define FIX_GYRO_BIAS false //是否修正零漂
-#define USING_ACC_EST_ALT true //是否使用加速度计做修正
+#define USING_ACC_EST_ALT false //是否使用加速度计做修正
 
 using namespace std;
 using namespace msr::airlib;
@@ -24,7 +24,7 @@ using namespace Eigen;
 extern DroneInfo drone_info;
 
 const float w_mag = 0.4f;
-const float w_acc = 0.01f;
+const float w_acc = 0.0f;
 const float w_mag_full = 0.5f;
 const double w_acc_pos_vel = 0.8;
 const float w_motor_output = 0.4f;	//电机输出的反馈修正权重
@@ -221,8 +221,6 @@ void Estimator::run()
 
 	//加速度计零漂
 	double acc_bias[3] = { accBiases[0], accBiases[1], 0 };
-	show_string(QString::number(accBiases[0]) + "\n");
-	show_string(QString::number(accBiases[1]) + "\n");
 
 	//重力加速度的绝对值
 	const double acc_gravity = sqrt(
@@ -311,7 +309,7 @@ void Estimator::run()
 				QMutexLocker data_locker(&drone_info.data_mutex);
 
 				// NOTE: CHANGE IF USE API !!!
-				isUsingAPI = true;  // = drone_info.angluar_setpoint.usingAPI; 
+				isUsingAPI = false;  // = drone_info.angluar_setpoint.usingAPI; 
 
 				got_data = drone_info.imu.updated;
 				got_data &= drone_info.mag.updated;
@@ -560,8 +558,8 @@ void Estimator::run()
 			gps_avg_y = gps_avg_y / 5.0;
 			gps_avg_z = gps_avg_z / 5.0;
 
-			fake_vx = (fake_vx + acc_buffer[0][0] * dt) * 0.99 + (gps_avg_x - gps_last[0]) / dt * 0.01; // delayed 200ms
-			fake_vy = (fake_vy + acc_buffer[0][1] * dt) * 0.99 + (gps_avg_y - gps_last[1]) / dt * 0.01; // delayed 200ms
+			fake_vx = (fake_vx + acc_buffer[0][0] * dt) * 0.995 + (gps_avg_x - gps_last[0]) / dt * 0.005; // delayed 200ms
+			fake_vy = (fake_vy + acc_buffer[0][1] * dt) * 0.995 + (gps_avg_y - gps_last[1]) / dt * 0.005; // delayed 200ms
 			fake_vz = (fake_vz + acc_buffer[0][2] * dt) * 0.99 + (gps_avg_z - gps_last[2]) / dt * 0.01; // delayed 200ms
 
 			gps_last[0] = gps_avg_x;
@@ -588,11 +586,11 @@ void Estimator::run()
 				vy += acc_buffer[i][1] * time_buffer[i];
 				vz += acc_buffer[i][2] * time_buffer[i];
 			}
-			print4num(fake_vz, vz, pz, baro_now / 2.0);
+			//print4num(fake_vz, vz, pz, baro_now / 2.0);
 		}
-		print3num(fake_vx, px, 1);
-		print3num(fake_vy, py, 2);
-		
+		print4num(vx, px, gps_x, 1);
+		//print4num(vy, py, gps_y, 2);
+		print3num(att_local.Euler.x, att_local.Euler.y, att_local.Euler.z);
 		
 
 		/*vec3f_t coor_acc_bias_earth = { px - lastX ,py - lastY ,pz - lastZ };
@@ -609,6 +607,7 @@ void Estimator::run()
 		print3num(acc_earth.x, acc_earth.y, acc_earth.z);*/
 
 		//print3num(gps_x, gps_y, gps.gps_height - gps_height_home);
+		//show_string(QString::number(att_local.Euler.x));
 
 		{
 			QMutexLocker data_locker(&drone_info.data_mutex);
@@ -636,13 +635,13 @@ void Estimator::run()
 			drone_info.test_value.baro = baro_now;
 
 			//估计的位置
-			drone_info.local_position.position.x = px;
-			drone_info.local_position.position.y = py;
+			drone_info.local_position.position.x = 0.0;// px;
+			drone_info.local_position.position.y = 0.0;//py;
 			drone_info.local_position.position.z = pz;
 
 			//估计的速度
-			drone_info.local_position.velocity.vx = vx;
-			drone_info.local_position.velocity.vy = vy;
+			drone_info.local_position.velocity.vx = 0.0;//vx;
+			drone_info.local_position.velocity.vy = 0.0;//vy;
 			drone_info.local_position.velocity.vz = vz;
 
 			//估计的姿态

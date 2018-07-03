@@ -13,6 +13,7 @@ STRICT_MODE_ON
 #include <iostream>
 #include <chrono>
 #include "positionController.h"
+#include "qout.h"
 
 using namespace std;
 using namespace msr::airlib;
@@ -66,27 +67,51 @@ void ProjectOne::run()
 
 	pitch = 0.0f;
 	roll = 0.0f;
-	throttle = 1.f;
+	throttle = 3.0f;
 	yaw_rate = 0.f;
-	duration = 4.f;
-
-	  
+	duration = 1.f;
 
 	/*give velocity setpoints
 	controller.giveVelSp(0.0f, 0.0f, 1.0f, 0.0f);
 	*/
-	//Controller controller_thread("controller_thread");
-	///*give position setpoints*/
-	//controller_thread.givePosSp(0.0f, 0.0f, -5.0f, 0.f);
-	//controller_thread.start();
+	Controller controller_thread("controller_thread");
+	/*give position setpoints*/
+	controller_thread.givePosSp(0.0f, 0.0f, -5.0f, 0.f);
+	controller_thread.start();
 
 
+	//int counter = 0;
 	while (true)
 	{
-		/* Direct angular control flight for test */
-		client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration); //Paras unknown meaning
+		/*counter++;
+		if (counter > 6) roll = 0.1;
+		if (counter > 12) roll = 0.0;
+		if (counter > 18) roll = -0.1;
 
-		msleep(duration * 1000);
+		{
+			QMutexLocker data_locker(&drone_info.data_mutex);
+			drone_info.angluar_setpoint.pitch = pitch;
+			drone_info.angluar_setpoint.roll = roll;
+			drone_info.angluar_setpoint.yaw_rate = 0.0f;
+			drone_info.angluar_setpoint.throttle = throttle;
+
+		}*/
+
+		/* Direct angular control flight for test */
+
+		/*{
+			QMutexLocker data_locker(&drone_info.data_mutex);
+			if (drone_info.local_position.position.z  > -0.3)
+			{
+				throttle += 0.01;
+			}
+		}*/
+		
+		/*show_string(QString::number(throttle) + "\n"); */
+
+		//client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration); //Paras unknown meaning
+
+		msleep(1000);
 
 		/* Stop watch dog */
 		{

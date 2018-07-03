@@ -53,9 +53,9 @@ void  DroneCompetition::panel_update()
 	{
 		QMutexLocker data_locker(&drone_info.data_mutex);
 		status_painter->pitchd = drone_info.attitude.angle_d.pitch_d;
-		status_painter->rolld = -drone_info.attitude.angle_d.roll_d;
+		status_painter->rolld = drone_info.attitude.angle_d.roll_d;
 		status_painter->pitch = drone_info.attitude.angle.pitch;
-		status_painter->roll = -drone_info.attitude.angle.roll;
+		status_painter->roll = drone_info.attitude.angle.roll;
 		status_painter->compassd = -drone_info.attitude.angle_d.yaw_d;
 		//gcy changed
 		
