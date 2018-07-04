@@ -588,9 +588,9 @@ void Estimator::run()
 			}
 			//print4num(fake_vz, vz, pz, baro_now / 2.0);
 		}
-		print4num(vx, px, gps_x, 1);
+		//print4num(vx, px, gps_x, 1);
 		//print4num(vy, py, gps_y, 2);
-		print3num(att_local.Euler.x, att_local.Euler.y, att_local.Euler.z);
+		//print3num(att_local.Euler.x, att_local.Euler.y, att_local.Euler.z);
 		
 
 		/*vec3f_t coor_acc_bias_earth = { px - lastX ,py - lastY ,pz - lastZ };
@@ -635,13 +635,13 @@ void Estimator::run()
 			drone_info.test_value.baro = baro_now;
 
 			//估计的位置
-			drone_info.local_position.position.x = 0.0;// px;
-			drone_info.local_position.position.y = 0.0;//py;
+			drone_info.local_position.position.x = px;
+			drone_info.local_position.position.y = py;
 			drone_info.local_position.position.z = pz;
 
 			//估计的速度
-			drone_info.local_position.velocity.vx = 0.0;//vx;
-			drone_info.local_position.velocity.vy = 0.0;//vy;
+			drone_info.local_position.velocity.vx = vx;
+			drone_info.local_position.velocity.vy = vy;
 			drone_info.local_position.velocity.vz = vz;
 
 			//估计的姿态

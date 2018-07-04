@@ -98,8 +98,10 @@ void rotation2euler(const Eigen::Matrix3f* R, Eigen::Vector3f* Euler)
 	//(*Euler)(1) = atan2(-(*R)(2, 0), sqrtf(x+y));
 	//(*Euler)(2) = atan2((*R)(1,0), (*R)(0,0));
 	////(*Euler)(2) = -atan2((*R)(0,1), (*R)(1,1));
+	
+	//(*Euler)(0) = atan2((*R)(2, 1), (*R)(2, 2));
+	(*Euler)(0) = atan((*R)(2, 1)/(*R)(2, 2));
 	(*Euler)(1) = -asin((*R)(2, 0));
-	(*Euler)(0) = atan2((*R)(2, 1), (*R)(2, 2));
 	(*Euler)(2) = -atan2((*R)(0, 1), (*R)(1, 1));
 }
 void euler2rotation(const Eigen::Vector3f* Euler, Eigen::Matrix3f* R)

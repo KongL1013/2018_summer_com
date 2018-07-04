@@ -12,9 +12,9 @@ extern msr::airlib::MultirotorRpcLibClient client;
 Controller::Controller(QString name) :
 	  b_stopped(false)
 	, isPosControl(true)
-	, m_pidX(160.0, 0.5, 2.0, 2.5, 0.0, -2.f, 2.f, -0.3, 0.3) //kp, kd, ki, kpp, ff, minOutput, maxOutput, integratorMin, integratorMax;
-	, m_pidY(160.0, 0.5, 2.0, 2.5, 0.0, -2.f, 2.f, -0.3, 0.3)//kp 22 kd 1.8 ki 2.0 kpp 7
-	, m_pidZ(170.0, 1.65, 5.0, 5.0, 0.0, -5.f, 5.f, -2, 2)//kpp 3
+	, m_pidX(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3) //kp, kd, ki, kpp, ff, minOutput, maxOutput, integratorMin, integratorMax;
+	, m_pidY(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3)//kp 22 kd 1.8 ki 2.0 kpp 7
+	, m_pidZ(2.f, 0.01, 0.05, 1.f, 0.0, -1.f, 10.f, -2, 2)//kpp 3
 	{
 		pos_Sp.setZero();
 		vel_Sp.setZero();
@@ -54,7 +54,7 @@ void Controller::stop()
 void Controller::run()
 {
 	float pitch, roll, yaw, yaw_rate, throttle, duration;
-	Eigen::Vector3f posEst, velEst, vel_ff, pos_begin, posDiff;
+	Eigen::Vector3f posEst, velEst, vel_ff, posDiff;
 	Eigen::Vector4f Output, posSptmp, velSptmp;
 	vel_ff.setZero();
 	Output.setZero();
@@ -68,6 +68,7 @@ void Controller::run()
 	{
 		QMutexLocker data_locker(&drone_info.data_mutex);
 		drone_info.angluar_setpoint.usingAPI = true;
+
 	}
 	
 	while (true)
@@ -108,21 +109,25 @@ void Controller::run()
 		}
 
 		//vec3f_add(&posSptmp, &posDiff);  //每次更新控制点
-		Eigen::Vector3f vel_sp;
-		vel_sp = control(posEst, velEst, m_posSp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
+		std::vector<Eigen::Vector3f> rvel_acc;
+		rvel_acc = control(posEst, velEst, m_posSp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
 		
 		control_cnt++;
 
 		/*控制器输出结果*/
-		pitch = Output(0);
+		
 		roll = Output(0);
+		pitch = Output(1);
 		yaw_rate = 0.0f;
 		throttle = Output(3);
 		
-		// show_string("x\t" + QString::number(m_posSp(0)) + "\t" + QString::number(vel_sp(0)) + "\t" + QString::number(posEst(0)) + "\t" + QString::number(velEst(0)) + "\t" +  QString::number(throttle) + "\n");
-		// show_string("y\t" + QString::number(m_posSp(1)) + "\t" + QString::number(vel_sp(1)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(velEst(1)) + "\t" +  QString::number(throttle) + "\n");
-		// show_string("z\t" + QString::number(m_posSp(2)) + "\t" + QString::number(vel_sp(2)) + "\t" + QString::number(posEst(2)) + "\t" + QString::number(velEst(2)) + "\t" +  QString::number(throttle) + "\n");
-			
+		 /*show_string("x- p\t" + QString::number(posEst(0)) + "\tv " + QString::number(velEst(0)) + "\tth " +  QString::number(throttle) + "\trs " + QString::number(roll) + "\tyaws " + QString::number(m_posSp(3)) + "\n");
+		 show_string("y- p\t" + QString::number(posEst(1)) + "\tv " + QString::number(velEst(1)) + "\tth " +  QString::number(throttle) + "\tps " + QString::number(pitch) + "\n");
+		 show_string("z- p\t" + QString::number(posEst(2)) + "\tv " + QString::number(velEst(2)) + "\tth " +  QString::number(throttle) + "\tys " + QString::number(yaw_rate) + "\n");*/
+		
+
+		 show_string(QString::number(posEst(0)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(posEst(2)) + "\n");
+
 		client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration);
 
 		/* Assign values */ 
@@ -145,7 +150,7 @@ void Controller::run()
 	}
 }
 
-Eigen::Vector3f Controller::control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
+std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
 	Eigen::Vector4f&  velSp, Eigen::Vector3f& Vel_ff, float dt, Eigen::Vector4f* Output)
 {
 	//    Eigen::Vector4f* Output;
@@ -196,10 +201,10 @@ Eigen::Vector3f Controller::control(const Eigen::Vector3f& pos_est, const Eigen:
 		_acc_Sp_W(2) = _acc_Sp_W(2) - GRAVITY / 1000.0f;// *(float)VEHICLE_MASS;
 
 		/* Fake acc to test*/
-		_acc_Sp_W(0) = 0.0;
+		/*_acc_Sp_W(0) = 0.0;
 		_acc_Sp_W(1) = 0.0;
 		_acc_Sp_W(2) = -1.0;
-		_acc_Sp_W(2) = _acc_Sp_W(2) - GRAVITY / 1000.0f;// *(float)VEHICLE_MASS;
+		_acc_Sp_W(2) = _acc_Sp_W(2) - GRAVITY / 1000.0f *(float)VEHICLE_MASS;*/
 		/*end*/
 
 		
@@ -210,7 +215,7 @@ Eigen::Vector3f Controller::control(const Eigen::Vector3f& pos_est, const Eigen:
 			_R_des(i, 2) = _Zb_des(i);
 
 		_Xc_des(0) = cos(posSp(3));
-		_Xc_des(1) = sin( posSp(3));
+		_Xc_des(1) = sin(posSp(3));
 
 		_Xc_des(2) = 0;
 
@@ -241,11 +246,13 @@ Eigen::Vector3f Controller::control(const Eigen::Vector3f& pos_est, const Eigen:
 		}
 
 		//_acc_Sp_W(2)
-		float thrust_force = vec3f_dot(&_acc_Sp_W, &temp)*VEHICLE_MASS/1000.f;
-
-		//        thrust_force /= 470.0f;
+		float thrust_force = vec3f_dot(&_acc_Sp_W, &temp)*VEHICLE_MASS / 1000.f;
+		
 		thrust_force = std::min(thrust_force, max_thrust);
 		(*Output)(3) = thrust_force;
 	}
-	return vel_Sp;
+	std::vector<Eigen::Vector3f> res;
+	res.push_back(vel_Sp);
+	res.push_back(_acc_Sp_W);
+	return res;
 }

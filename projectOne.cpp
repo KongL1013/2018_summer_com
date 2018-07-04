@@ -59,7 +59,7 @@ void ProjectOne::run()
 	}
 	while (! client.takeoff(50))
 	{
-		msleep(100);
+		msleep(50);
 	}
 	sleep(1);
 	
@@ -76,9 +76,13 @@ void ProjectOne::run()
 	*/
 	Controller controller_thread("controller_thread");
 	/*give position setpoints*/
-	controller_thread.givePosSp(0.0f, 0.0f, -5.0f, 0.f);
+	
+	{
+		QMutexLocker data_locker(&drone_info.data_mutex);
+		float yaw_est = drone_info.attitude.angle.yaw;
+		controller_thread.givePosSp(5.0f, 5.0f, -5.0f, yaw_est);
+	}
 	controller_thread.start();
-
 
 	//int counter = 0;
 	while (true)

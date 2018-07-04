@@ -23,7 +23,7 @@ public:
 
 	void run();
 	void stop();
-	Eigen::Vector3f  control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
+	std::vector<Eigen::Vector3f>  control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
 		Eigen::Vector4f&  velSp, Eigen::Vector3f& Vel_ff,float dt, Eigen::Vector4f* Output);
 	void usePosControl()
 	{
