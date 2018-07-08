@@ -198,7 +198,7 @@ void ImageProcess::downFindAllRectangle(Mat &input_img, std::vector<RotatedRect>
 //Find the red circle top seview location in top view
 //寻找所有的红色圈的位置，同样要确定巡航高度*hight0*，调节阈值
 //Output: red circles global locations    (from picture to GPS)  巡航后得到全局红色圈的位置
-cv::Rect ImageProcess::downFindAllRedCircle(Mat &input_img) {
+ bool ImageProcess::downFindRedCircle(Mat &input_img, cv::Rect& maxRect)	 {
 
 	//use hue to find the red region  from   Hue, Saturation, Value  --A. R. Smith1978//
 	Mat img_hsv;
@@ -250,9 +250,9 @@ cv::Rect ImageProcess::downFindAllRedCircle(Mat &input_img) {
 
 
 	// 将轮廓转为矩形框
-	cv::Rect maxRect = cv::boundingRect(maxContour);
-	/*
-	cout << maxRect << endl;
+	maxRect = cv::boundingRect(maxContour);
+	
+	//cout << maxRect << endl;
 	// 显示连通域
 	cv::Mat result1, result2;
 
@@ -265,15 +265,18 @@ cv::Rect ImageProcess::downFindAllRedCircle(Mat &input_img) {
 	cv::rectangle(result1, r, cv::Scalar(255));
 	}
 	cv::imshow("all regions", result1);
-	cv::waitKey();
+	cv::waitKey(10);
 
 	cv::rectangle(result2, maxRect, cv::Scalar(255));
 	cv::imshow("largest region", result2);
 
-	waitKey();
-	*/
+	waitKey(10);
+	
 
-	return maxRect;
+	bool sign_circle = false;
+	if (maxRect.area() >= 200) sign_circle = true;
+
+	return sign_circle;
 }
 
 
@@ -281,9 +284,10 @@ cv::Rect ImageProcess::downFindAllRedCircle(Mat &input_img) {
 //根据全局坐标，飞到对应停机坪上方固定高度*hight1*处采集图像
 //根据图像，抠取相应的图像区域rect，resize后作为SVM/DNN的输入
 //Output: number rect region
-void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect) {
+bool ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect) {
 
 	// canny 检测 边缘
+	bool sign_rect = false;			//check if there is any rect detected
 	Mat grey;
 	Mat edges;
 	int lowThresh = 50; int lowThrestHigh = 100; int apatureszie = 3;
@@ -320,10 +324,23 @@ void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect
 
 	//拟合最大矩形
 	rect = boundingRect(contours[max_i]);
+	
+	if (rect.area() >= 5000){
+		sign_rect = true;
+	}//some threshold
 	Mat rect_roi;
+
+
 	input_img(rect).copyTo(rect_roi);
 	//返回矩形片 Mat
 	output_img = rect_roi;
+
+	//TODO:delete
+	imshow("rect_down", rect_roi);   //check
+	waitKey(10);
+
+
+	return sign_rect;
 }
 
 //-6- find center

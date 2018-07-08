@@ -156,7 +156,7 @@ void ProjectOne::run()
 				cv::Rect num_rect_down;
 
 				cv::imshow("down_mat", down_mat);
-				cv::waitKey(1000);
+				cv::waitKey(10);
 
 				image_process_thread.downFindRectangle(down_mat, result_down, num_rect_down);
 
@@ -174,6 +174,7 @@ void ProjectOne::run()
 					if (abs(delt_x) > 40) roll_set = 0.08 * delt_x / abs(delt_x);
 					if (abs(delt_y) > 40) pitch_set = 0.08 * delt_y / abs(delt_y);
 
+					msleep(500);
 					controller_thread.giveAttSp(pitch_set, roll_set, 0.f, 0.65f, 0.5);
 					msleep(500);
 					controller_thread.hover();
@@ -181,6 +182,7 @@ void ProjectOne::run()
 				}
 				else
 				{
+					msleep(500);
 					controller_thread.giveAttSp(0.f, 0.f, 0.f, 0.56f, 0.1);
 					msleep(200);
 					controller_thread.hover();
@@ -217,8 +219,6 @@ void ProjectOne::run()
 
 			msleep(200);
 		}
-
-		
 
 		/* TODO: Number 3 -> 10*/
 		for (int j = 4; j < 11; j++)
@@ -264,9 +264,216 @@ void ProjectOne::run()
 			controller_thread.hover();
 			msleep(1000);
 
+			/* TODO: Find and land on board or fly through circle*/
+			bool bool_board = true; // otherwise circle
+
+			while (true)
+			{
+				controller_thread.hover();
+				msleep(500);
+
+				cv::Mat down_mat;
+				{
+					QMutexLocker data_locker(&drone_info.data_mutex);
+					drone_info.images.mat_down_rgb.copyTo(down_mat);
+					px = drone_info.local_position.position.x;
+					py = drone_info.local_position.position.y;
+					pz = drone_info.local_position.position.z;
+				}
+				cv::Mat result_down;
+				cv::Rect circle_rect;
+				cv::Rect board_rect;
+
+				bool found_board =  image_process_thread.downFindRectangle(down_mat, result_down, board_rect);
+
+				if (found_board)
+				{
+					/* Land on target board by image*/
+					while (true)
+					{
+						/* Calculate position error by Downside Image */
+						controller_thread.hover();
+						msleep(500);
+
+						cv::Mat down_mat;
+						{
+							QMutexLocker data_locker(&drone_info.data_mutex);
+							drone_info.images.mat_down_rgb.copyTo(down_mat);
+							px = drone_info.local_position.position.x;
+							py = drone_info.local_position.position.y;
+							pz = drone_info.local_position.position.z;
+						}
+						cv::Mat result_down;
+						cv::Rect num_rect_down;
+
+						cv::imshow("down_mat", down_mat);
+						cv::waitKey(10);
+
+						image_process_thread.downFindRectangle(down_mat, result_down, num_rect_down);
+
+						show_string("RECT\t" + QString::number(num_rect_down.tl().x) + "\t" + QString::number(num_rect_down.br().x) + "\n");
+						if (num_rect_down.br().x - num_rect_down.tl().x > 100 || num_rect_down.br().y - num_rect_down.tl().y > 80) // ??? Why don't work
+						{
+							int center_x = (num_rect_down.tl().x + num_rect_down.br().x) / 2;
+							int center_y = (num_rect_down.tl().y + num_rect_down.br().y) / 2;
+
+							int delt_x = center_x - IMGWIDTH / 2; //IMG coordinate
+							int delt_y = center_y - IMGHEIGHT / 2; //IMG coordinate
+
+							float pitch_set = 0.f, roll_set = 0.f;
+							if (abs(delt_x) < 40 && abs(delt_y) < 40) break;
+							if (abs(delt_x) > 40) roll_set = 0.08 * delt_x / abs(delt_x);
+							if (abs(delt_y) > 40) pitch_set = 0.08 * delt_y / abs(delt_y);
+
+							msleep(500);
+							controller_thread.giveAttSp(pitch_set, roll_set, 0.f, 0.64f, 0.5);
+							msleep(500);
+							controller_thread.hover();
+
+						}
+						else
+						{
+							msleep(500);
+							controller_thread.giveAttSp(0.f, 0.f, 0.f, 0.56f, 0.1);
+							msleep(200);
+							controller_thread.hover();
+						}
+					}
+
+					controller_thread.land();
+					msleep(3000);
+
+					controller_thread.takeoff();
+					msleep(1200);
+
+					controller_thread.hover();
+					msleep(1000);
+
+					break;
+				}
+				else // No board found
+				{
+					bool found_circle = image_process_thread.downFindRedCircle(result_down, circle_rect);
+
+					if (found_circle)
+					{
+						/* Go to the front of the circle by image*/
+						while (true)
+						{
+							/* Calculate position error by Downside Image */
+							controller_thread.hover();
+							msleep(500);
+
+							cv::Mat down_mat;
+							{
+								QMutexLocker data_locker(&drone_info.data_mutex);
+								drone_info.images.mat_down_rgb.copyTo(down_mat);
+								px = drone_info.local_position.position.x;
+								py = drone_info.local_position.position.y;
+								pz = drone_info.local_position.position.z;
+							}
+							cv::Mat result_down;
+							cv::Rect num_rect_down;
+
+							cv::imshow("down_mat", down_mat);
+							cv::waitKey(10);
+
+							image_process_thread.downFindRectangle(down_mat, result_down, num_rect_down);
+
+							show_string("RECT\t" + QString::number(num_rect_down.tl().x) + "\t" + QString::number(num_rect_down.br().x) + "\n");
+							if (num_rect_down.br().x - num_rect_down.tl().x > 2 || num_rect_down.br().y - num_rect_down.tl().y > 2) // ??? Why don't work
+							{
+								int center_x = (num_rect_down.tl().x + num_rect_down.br().x) / 2;
+								int center_y = (num_rect_down.tl().y + num_rect_down.br().y) / 2;
+
+								int delt_x = center_x - IMGWIDTH / 2; //IMG coordinate
+								int delt_y = center_y - (IMGHEIGHT / 9 * 4 ); //IMG coordinate
+
+								float pitch_set = 0.f, roll_set = 0.f;
+								if (abs(delt_x) < 40 && abs(delt_y) < 40) break;
+								if (abs(delt_x) > 40) roll_set = 0.08 * delt_x / abs(delt_x);
+								if (abs(delt_y) > 40) pitch_set = 0.08 * delt_y / abs(delt_y);
+
+								msleep(500);
+								controller_thread.giveAttSp(pitch_set, roll_set, 0.f, 0.61f, 0.5);
+								msleep(500);
+								controller_thread.hover();
+
+							}
+							else
+							{
+								msleep(500);
+								controller_thread.giveAttSp(0.f, 0.f, 0.f, 0.56f, 0.1);
+								msleep(200);
+								controller_thread.hover();
+							}
+						}
+
+						msleep(500);
+						controller_thread.giveAttSp(0.f, 0.f, 0.f, 0.5f, 5.0);
+						
+						while (true)
+						{
+							{
+								QMutexLocker data_locker(&drone_info.data_mutex);
+								px = drone_info.local_position.position.x;
+								py = drone_info.local_position.position.y;
+								pz = drone_info.local_position.position.z;
+							}
+							
+							if (pz > -2.0)
+								break;
+							msleep(100);
+						}
+
+						controller_thread.hover();
+						msleep(1000);
+
+						/* Fly through circle */
+						cv::Mat front_mat;
+						{
+							QMutexLocker data_locker(&drone_info.data_mutex);
+							drone_info.images.mat_front_rgb.copyTo(front_mat);
+							px = drone_info.local_position.position.x;
+							py = drone_info.local_position.position.y;
+							pz = drone_info.local_position.position.z;
+						}
+
+						std::vector<Vec3f> circles;
+						image_process_thread.frontFindCircle(front_mat, circles);
+
+						cv::imshow("front_mat", front_mat);
+						cv::waitKey(10);
+
+						int center_x = circles[0][0];
+						int center_y = circles[0][1];
+
+						int delt_x = center_x - IMGWIDTH / 2; //IMG coordinate
+						int delt_y = center_y - (IMGHEIGHT / 2); //IMG coordinate
+
+						float throttle = 6.f, roll_set = 0.f;
+						if (abs(delt_x) < 40 && abs(delt_y) < 40) break;
+						/* Control throttle and roll seperately */
+						if (abs(delt_x) > 40) roll_set = 0.08 * delt_x / abs(delt_x);
+						else if (abs(delt_y) > 40) throttle += -0.01 * delt_y / abs(delt_y);
+
+						msleep(500);
+						controller_thread.giveAttSp(0.f, roll_set, 0.f, throttle, 0.5);
+						msleep(500);
+						controller_thread.hover();
+					}
+				}
+		
+				controller_thread.giveAttSp(0.f, -0.1f, 0.f, 0.64f, 0.5);
+				msleep(1000);
+				controller_thread.hover();
+				msleep(1000);
+			}
 
 		}
 		
+		/* TODO: Find QR codes */
+
 		break;
 		
 
