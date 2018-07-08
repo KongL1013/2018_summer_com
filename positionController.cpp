@@ -11,7 +11,8 @@ extern msr::airlib::MultirotorRpcLibClient client;
 
 Controller::Controller(QString name) :
 	  b_stopped(false)
-	, isPosControl(true)
+	//, isPosControl(true)
+	, m_mode(HOVER)
 	, m_pidX(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3) //kp, kd, ki, kpp, ff, minOutput, maxOutput, integratorMin, integratorMax;
 	, m_pidY(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3)//kp 22 kd 1.8 ki 2.0 kpp 7
 	, m_pidZ(2.f, 0.01, 0.05, 1.f, 0.0, -1.f, 10.f, -2, 2)//kpp 3
@@ -53,7 +54,7 @@ void Controller::stop()
 
 void Controller::run()
 {
-	float pitch, roll, yaw, yaw_rate, throttle, duration;
+	
 	Eigen::Vector3f posEst, velEst, vel_ff, posDiff;
 	Eigen::Vector4f Output, posSptmp, velSptmp;
 	vel_ff.setZero();
@@ -61,7 +62,7 @@ void Controller::run()
 	posSptmp.setZero();
 	velSptmp.setZero();
 	posDiff.setZero();
-	duration = 4.f;
+	m_duration = 4.f;
 	int control_cnt = 0;
 	float control_thres = 0.1;
 
@@ -90,55 +91,53 @@ void Controller::run()
 		//		posSptmp[i] = m_posSp[i];
 		//	}
 		//	posDiff = vec3f_minus(&posSptmp, &posEst);
-		//	vec3f_devide_number(&posDiff, duration);	//控制点之间的间隔
+		//	vec3f_devide_number(&posDiff, m_duration);	//控制点之间的间隔
 		//	for (int i = 0; i < 3; ++i) {
 		//		posSptmp[i] = posEst[i];
 		//	}
 		//}
 
-		if (!isPosControl)  //速度控制
-		{
-			float vx, vy, vz;
-			giveVelSp(vx, vy, vz, 0.0f);
-		}
-
 		if (vec3f_length(&posDiff) <= control_thres)  //接近（认为到达）目标，hover
 		{
 			/*hover*/
-
 		}
-
-		//vec3f_add(&posSptmp, &posDiff);  //每次更新控制点
-		std::vector<Eigen::Vector3f> rvel_acc;
-		rvel_acc = control(posEst, velEst, m_posSp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
-		
-		control_cnt++;
-
-		/*控制器输出结果*/
-		
-		roll = Output(0);
-		pitch = Output(1);
-		yaw_rate = 0.0f;
-		throttle = Output(3);
-		
-		 /*show_string("x- p\t" + QString::number(posEst(0)) + "\tv " + QString::number(velEst(0)) + "\tth " +  QString::number(throttle) + "\trs " + QString::number(roll) + "\tyaws " + QString::number(m_posSp(3)) + "\n");
-		 show_string("y- p\t" + QString::number(posEst(1)) + "\tv " + QString::number(velEst(1)) + "\tth " +  QString::number(throttle) + "\tps " + QString::number(pitch) + "\n");
-		 show_string("z- p\t" + QString::number(posEst(2)) + "\tv " + QString::number(velEst(2)) + "\tth " +  QString::number(throttle) + "\tys " + QString::number(yaw_rate) + "\n");*/
-		
-
-		 show_string(QString::number(posEst(0)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(posEst(2)) + "\n");
-
-		client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration);
-
-		/* Assign values */ 
-		//LOCK????
+		if (m_mode == ATTCTRL)             //姿态控制接口
 		{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-			drone_info.angluar_setpoint.pitch = pitch;
-			drone_info.angluar_setpoint.roll = roll;
-			drone_info.angluar_setpoint.yaw_rate = 0.0f;
-			drone_info.angluar_setpoint.throttle = throttle;
-			
+			client.moveByAngleThrottle(m_pitch, m_roll, m_throttle, m_yaw_rate, m_duration);
+		}
+		else if(m_mode == HOVER)		   //悬停接口
+		{
+			client.hover();
+		}	
+		else {							  //位置、速度控制接口
+			std::vector<Eigen::Vector3f> rvel_acc;
+			rvel_acc = control(posEst, velEst, m_posSp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
+			control_cnt++;
+			/*控制器输出结果*/
+
+			m_roll = Output(0);
+			m_pitch = Output(1);
+			m_yaw_rate = 0.0f;
+			m_throttle = Output(3);
+
+			/*show_string("x- p\t" + QString::number(posEst(0)) + "\tv " + QString::number(velEst(0)) + "\tth " +  QString::number(throttle) + "\trs " + QString::number(m_roll) + "\tyaws " + QString::number(m_posSp(3)) + "\n");
+			show_string("y- p\t" + QString::number(posEst(1)) + "\tv " + QString::number(velEst(1)) + "\tth " +  QString::number(throttle) + "\tps " + QString::number(m_pitch) + "\n");
+			show_string("z- p\t" + QString::number(posEst(2)) + "\tv " + QString::number(velEst(2)) + "\tth " +  QString::number(throttle) + "\tys " + QString::number(yaw_rate) + "\n");*/
+
+
+			show_string(QString::number(posEst(0)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(posEst(2)) + "\n");
+
+			client.moveByAngleThrottle(m_pitch, m_roll, m_throttle, m_yaw_rate, m_duration);
+
+			/* Assign values */
+			{
+				QMutexLocker data_locker(&drone_info.data_mutex);
+				drone_info.angluar_setpoint.pitch = m_pitch;
+				drone_info.angluar_setpoint.roll = m_roll;
+				drone_info.angluar_setpoint.yaw_rate = 0.0f;
+				drone_info.angluar_setpoint.throttle = m_throttle;
+
+			}
 		}
 		
 		/* Stop watch dog */
@@ -156,20 +155,21 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 	//    Eigen::Vector4f* Output;
 	if (dt<0.1f)
 	{
-		if (isPosControl)									//位置控制接口 isPosControl==1:位置控制；  ==0: 速度控制
+		float x_temp_est = pos_est(0);
+		float y_temp_est = pos_est(1);
+		float z_temp_est = pos_est(2);
+
+		float x_sp = pos_Sp(0);
+		float y_sp = pos_Sp(1);
+		float z_sp = pos_Sp(2);
+		switch (m_mode)
 		{
+		case POSCTRL:							//位置控制接口 
 			for (int i = 0; i<3; i++) {
-				pos_Sp(i) =  posSp(i);
+				pos_Sp(i) = posSp(i);
 			}
-			float x_temp_est = pos_est(0);
-			float y_temp_est = pos_est(1);
-			float z_temp_est = pos_est(2);
-
-			float x_sp = pos_Sp(0);
-			float y_sp = pos_Sp(1);
-			float z_sp = pos_Sp(2);
-
-			if (Vel_ff[0]==0.0f && Vel_ff[1] == 0.0f && Vel_ff[2] == 0.0f) //without vel_ff
+			
+			if (Vel_ff[0] == 0.0f && Vel_ff[1] == 0.0f && Vel_ff[2] == 0.0f) //without vel_ff
 			{
 				vel_Sp(0) = m_pidX.pp_update(x_temp_est, x_sp);
 				vel_Sp(1) = m_pidY.pp_update(y_temp_est, y_sp);
@@ -180,13 +180,16 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 				vel_Sp(1) = m_pidY.pp_update(y_temp_est, y_sp)*0.7f + Vel_ff(1)*0.3f;
 				vel_Sp(2) = m_pidZ.pp_update(z_temp_est, z_sp)*0.7f + Vel_ff(2)*0.3f;
 			}
-		}
-		else{												//速度控制接口
+			break;
+		case VELCTRL:										//速度控制接口
 			for (int i = 0; i < 3; i++) {
 				vel_Sp(i) = velSp(i);
 			}
+			break;
+		default:
+			
+			break;
 		}
-
 		float vx_temp_est = vel_est(0);
 		float vy_temp_est = vel_est(1);
 		float vz_temp_est = vel_est(2);
@@ -199,15 +202,6 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 		_acc_Sp_W(1) = m_pidY.pid_update(vy_temp_est, vel_Sp(1), dt);
 		_acc_Sp_W(2) = m_pidZ.pid_update(vz_temp_est, vel_Sp(2), dt);
 		_acc_Sp_W(2) = _acc_Sp_W(2) - GRAVITY / 1000.0f;// *(float)VEHICLE_MASS;
-
-		/* Fake acc to test*/
-		/*_acc_Sp_W(0) = 0.0;
-		_acc_Sp_W(1) = 0.0;
-		_acc_Sp_W(2) = -1.0;
-		_acc_Sp_W(2) = _acc_Sp_W(2) - GRAVITY / 1000.0f *(float)VEHICLE_MASS;*/
-		/*end*/
-
-		
 
 		vec3f_passnorm(&_acc_Sp_W, &_Zb_des);
 
@@ -237,7 +231,7 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 
 		(*Output)(2) = 0.0f;  //yaw rate
 
-		//(*Output)(0) = -(*Output)(0);
+							  //(*Output)(0) = -(*Output)(0);
 
 		Eigen::Vector3f temp;
 		temp.setZero();
@@ -247,7 +241,7 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 
 		//_acc_Sp_W(2)
 		float thrust_force = vec3f_dot(&_acc_Sp_W, &temp)*VEHICLE_MASS / 1000.f;
-		
+
 		thrust_force = std::min(thrust_force, max_thrust);
 		(*Output)(3) = thrust_force;
 	}

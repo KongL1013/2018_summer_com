@@ -23,24 +23,29 @@ public:
 
 	void run();
 	void stop();
+	enum modeControl
+	{
+		POSCTRL = 0,
+		VELCTRL = 1,
+		ATTCTRL,
+		HOVER
+	}m_mode;
+
 	std::vector<Eigen::Vector3f>  control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
 		Eigen::Vector4f&  velSp, Eigen::Vector3f& Vel_ff,float dt, Eigen::Vector4f* Output);
-	void usePosControl()
+	void setmode(const modeControl& mode)
 	{
-		isPosControl = true;
+		m_mode = mode;
 	}
-	void useVelControl()
-	{
-		isPosControl = false;
-	}
+
 	void givePosSp(const float& x, const float& y, const float& z, const float& yaw)
 	{
 		m_posSp(0) = x;
 		m_posSp(1) = y;
 		m_posSp(2) = z;
 		m_posSp(3) = yaw;
-		usePosControl();
 		m_velSp.setZero();
+		m_mode = POSCTRL;
 	}
 	void giveVelSp(const float& vx, const float& vy, const float& vz, const float& yaw)
 	{
@@ -48,11 +53,25 @@ public:
 		m_velSp(1) = vy;
 		m_velSp(2) = vz;
 		m_velSp(3) = yaw;
-		useVelControl();
+		m_mode = VELCTRL;
+	}
+	void giveAttSp(const float& pitch, const float& roll, const float& yaw_rate, const float& thrust, const float& duration)
+	{
+		m_pitch = pitch;
+		m_roll = roll;
+		m_yaw_rate = yaw_rate;
+		m_throttle = thrust;
+		m_duration = duration;
+		m_mode = ATTCTRL;
+	}
+	void hover()
+	{
+		m_mode = HOVER;
 	}
 	const float max_thrust = 0.5827*1.3;  //to modify 
+	
 private:
-	bool b_stopped, isPosControl;//是否用位置控制
+	bool b_stopped;//, isPosControl;//是否用位置控制
 	QMutex m_mutex;
 	Eigen::Vector3f _Zb_des, _Xc_des, _Yb_des, _Xb_des;
 	Eigen::Matrix3f _R_des;
@@ -64,6 +83,7 @@ private:
 	PID m_pidX;
 	PID m_pidY;
 	PID m_pidZ;
-
-
+	float m_pitch, m_roll, m_yaw, m_yaw_rate, m_throttle, m_duration;
+	
+	
 };

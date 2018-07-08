@@ -44,7 +44,8 @@ void ProjectOne::run()
 
 	sleep(2); //连接后姿态估计线程会标定当前零漂
 
-	/*while (1)
+	/**不控制*/
+	/*while (1) 
 	{
 		sleep(1);
 	}*///for manual control
@@ -52,6 +53,11 @@ void ProjectOne::run()
 	/* This is about strategy :D */
 
 	client.enableApiControl(true);
+
+	/**悬停模式*/
+	//client.moveByAngleThrottle(0, 0, 5.88, 0, 0.1);
+	//client.hover();
+	//while (1);
 
 	while (! client.armDisarm(true))
 	{
@@ -63,59 +69,30 @@ void ProjectOne::run()
 	}
 	sleep(1);
 	
-	float pitch, roll, throttle, yaw_rate, duration;
-
-	pitch = 0.0f;
-	roll = 0.0f;
-	throttle = 3.0f;
-	yaw_rate = 0.f;
-	duration = 1.f;
-
-	/*give velocity setpoints
-	controller.giveVelSp(0.0f, 0.0f, 1.0f, 0.0f);
-	*/
 	Controller controller_thread("controller_thread");
 	/*give position setpoints*/
-	
+	float yaw_est;
 	{
 		QMutexLocker data_locker(&drone_info.data_mutex);
-		float yaw_est = drone_info.attitude.angle.yaw;
-		controller_thread.givePosSp(5.0f, 5.0f, -5.0f, yaw_est);
+		yaw_est = drone_info.attitude.angle.yaw;		
+		//controller_thread.setmode(controller_thread.POSCTRL);		//显性改变接口	
 	}
 	controller_thread.start();
 
 	//int counter = 0;
 	while (true)
 	{
-		/*counter++;
-		if (counter > 6) roll = 0.1;
-		if (counter > 12) roll = 0.0;
-		if (counter > 18) roll = -0.1;
+		/*give velocity setpoints
+		controller.giveVelSp(0.0f, 0.0f, 1.0f, 0.0f);
+		*/
 
-		{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-			drone_info.angluar_setpoint.pitch = pitch;
-			drone_info.angluar_setpoint.roll = roll;
-			drone_info.angluar_setpoint.yaw_rate = 0.0f;
-			drone_info.angluar_setpoint.throttle = throttle;
 
-		}*/
+		controller_thread.givePosSp(-11.0f, -62.0f, -5.0f, yaw_est);   //隐性改变接口
 
-		/* Direct angular control flight for test */
+		msleep(5000);
+		controller_thread.hover();
+		msleep(5000);
 
-		/*{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-			if (drone_info.local_position.position.z  > -0.3)
-			{
-				throttle += 0.01;
-			}
-		}*/
-		
-		/*show_string(QString::number(throttle) + "\n"); */
-
-		//client.moveByAngleThrottle(pitch, roll, throttle, yaw_rate, duration); //Paras unknown meaning
-
-		msleep(1000);
 
 		/* Stop watch dog */
 		{

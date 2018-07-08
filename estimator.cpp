@@ -14,7 +14,7 @@
 
 #define MAG_EST_ALL true //flase: 只估计yaw  true: 修正3个角度
 #define FIX_GYRO_BIAS false //是否修正零漂
-#define USING_ACC_EST_ALT false //是否使用加速度计做修正
+#define USING_ACC_EST_ALT true //是否使用加速度计做修正
 
 using namespace std;
 using namespace msr::airlib;
@@ -24,7 +24,7 @@ using namespace Eigen;
 extern DroneInfo drone_info;
 
 const float w_mag = 0.4f;
-const float w_acc = 0.0f;
+const float w_acc = 0.025f;
 const float w_mag_full = 0.5f;
 const double w_acc_pos_vel = 0.8;
 const float w_motor_output = 0.4f;	//电机输出的反馈修正权重
@@ -48,6 +48,8 @@ double z_est[2] = { 0.0, 0.0 };
 double lastX = 0.0;
 double lastY = 0.0;
 double lastZ = 0.0;
+
+double debug_temp[3];
 
 double corr_baro[2] = { 0.0 , 0.0 };
 double corr_gps[3][2] = {
@@ -650,9 +652,9 @@ void Estimator::run()
 			drone_info.attitude.angle.yaw = att_local.Euler.z;
 
 
-			drone_info.test_value.test1 = att_local.Euler.x;
-			drone_info.test_value.test2 = att_local.Euler.y;
-			drone_info.test_value.test3 = att_local.Euler.z;
+			drone_info.test_value.test1 = ground_x;
+			drone_info.test_value.test2 = ground_y;
+			drone_info.test_value.test3 = ground_z;
 
 			drone_info.degree_values_cal();
 		}

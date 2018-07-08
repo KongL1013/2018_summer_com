@@ -12,6 +12,8 @@
 #include <QDir>
 #include <QImage>  
 
+#include "vehicles/multirotor/api/MultirotorRpcLibClient.hpp"
+
 class DroneCompetition : public QMainWindow
 {
 	Q_OBJECT
@@ -24,6 +26,10 @@ public:
 	QTime system_time; // System time
 
 private:
+
+	//gcy changed
+	msr::airlib::MultirotorRpcLibClient client;
+
 	Ui::DroneCompetitionClass ui;
 
 	void get_Painter_Address(StatusPainter *painter);
@@ -61,6 +67,8 @@ private slots:
 	void pushButton_FrontImgDep_Cap_Clicked();
 	void pushButton_DownImgRGB_Cap_Clicked();
 	void pushButton_FrontImg_Cap_Clicked();
+
+	void keyPressEvent(QKeyEvent *event);
 };
 
 

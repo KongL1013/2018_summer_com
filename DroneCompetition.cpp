@@ -3,6 +3,8 @@
 #include "droneInfo.h"
 #include "qout.h"
 
+#include <qevent.h>
+
 extern Estimator estimator_thread;
 extern DroneInfo drone_info;
 extern QString text_output;
@@ -55,7 +57,7 @@ void  DroneCompetition::panel_update()
 		status_painter->pitchd = drone_info.attitude.angle_d.pitch_d;
 		status_painter->rolld = drone_info.attitude.angle_d.roll_d;
 		status_painter->pitch = drone_info.attitude.angle.pitch;
-		status_painter->roll = drone_info.attitude.angle.roll;
+		status_painter->roll = -drone_info.attitude.angle.roll; //gcy_changed
 		status_painter->compassd = -drone_info.attitude.angle_d.yaw_d;
 		//gcy changed
 		
@@ -128,9 +130,20 @@ void DroneCompetition::image_update()
 
 		if (save_img_front_rgb)
 		{
+			//gcy changed
 			system_time = QTime::currentTime();
-		    char name[60];
-			sprintf(name, "E:\\competition2018\\Images\\FrontRGB\\fr-%d-%d-%d.png", system_time.hour(), system_time.minute(), system_time.second());
+			QString floder = ui.etSavePath->text();
+			if (floder.isEmpty()) {
+				floder = "FrontRGB";
+			}
+			QDir dir("E:\\competition2018\\Images\\" + floder);
+			if (!dir.exists()) {
+				dir.mkpath("E:\\competition2018\\Images\\" + floder);
+			}
+			char name[80];
+			QString savePath = "E:\\competition2018\\Images\\" + floder + "\\fr-%d-%d-%d.png";
+			QByteArray pathTemp = savePath.toLatin1();
+			sprintf(name, pathTemp.data(), system_time.hour(), system_time.minute(), system_time.second());
 			img_front_rgb.save(name, "PNG", 100);
 			save_img_front_rgb = false;
 		}
@@ -151,9 +164,20 @@ void DroneCompetition::image_update()
 
 		if (save_img_front_dep)
 		{
+			//gcy changed
 			system_time = QTime::currentTime();
-			char name[60];
-			sprintf(name, "E:\\competition2018\\Images\\FrontDepth\\fd-%d-%d-%d.png", system_time.hour(), system_time.minute(), system_time.second());
+			QString floder = ui.etSavePath->text();
+			if (floder.isEmpty()) {
+				floder = "FrontDepth";
+			}
+			QDir dir("E:\\competition2018\\Images\\" + floder);
+			if (!dir.exists()) {
+				dir.mkpath("E:\\competition2018\\Images\\" + floder);
+			}
+			char name[80];
+			QString savePath = "E:\\competition2018\\Images\\" + floder + "\\fd-%d-%d-%d.png";
+			QByteArray pathTemp = savePath.toLatin1();
+			sprintf(name, pathTemp.data(), system_time.hour(), system_time.minute(), system_time.second());
 			img_front_dep.save(name, "PNG", 100);
 
 			save_img_front_dep = false;
@@ -173,9 +197,26 @@ void DroneCompetition::image_update()
 
 		if (save_img_down_rgb)
 		{
+			//gcy changed
+			double h;
+			{
+				QMutexLocker data_locker(&drone_info.data_mutex);
+				h = drone_info.test_value.test3 + 2.355;
+			}
+			QString height = QString::number(h);
 			system_time = QTime::currentTime();
-			char name[60];
-			sprintf(name, "E:\\competition2018\\Images\\DownRGB\\dr-%d-%d-%d.png", system_time.hour(), system_time.minute(), system_time.second());
+			QString floder = ui.etSavePath->text();
+			if (floder.isEmpty()) {
+				floder = "DownRGB";
+			}
+			QDir dir("E:\\competition2018\\Images\\" + floder);
+			if (!dir.exists()) {
+				dir.mkpath("E:\\competition2018\\Images\\" + floder);
+			}
+			char name[80];
+			QString savePath = "E:\\competition2018\\Images\\" + floder + "\\dr-" + height + "-%d-%d-%d.png";
+			QByteArray pathTemp = savePath.toLatin1();
+			sprintf(name, pathTemp.data(), system_time.hour(), system_time.minute(), system_time.second());
 			img_down_rgb.save(name, "PNG", 100);
 			
 			save_img_down_rgb = false;
@@ -230,4 +271,62 @@ void DroneCompetition::pushButton_FrontImg_Cap_Clicked()
 {
 	save_img_front_rgb = true;
 	save_img_front_dep = true;
+}
+
+void DroneCompetition::keyPressEvent(QKeyEvent  *event) {
+	switch (event->key()) {
+	case Qt::Key_1:
+		ui.etSavePath->setText("1");
+		break;
+	case Qt::Key_2:
+		ui.etSavePath->setText("2");
+		break;
+	case Qt::Key_3:
+		ui.etSavePath->setText("3");
+		break;
+	case Qt::Key_4:
+		ui.etSavePath->setText("4");
+		break;
+	case Qt::Key_5:
+		ui.etSavePath->setText("5");
+		break;
+	case Qt::Key_6:
+		ui.etSavePath->setText("6");
+		break;
+	case Qt::Key_7:
+		ui.etSavePath->setText("7");
+		break;
+	case Qt::Key_8:
+		ui.etSavePath->setText("8");
+		break;
+	case Qt::Key_9:
+		ui.etSavePath->setText("9");
+		break;
+	case Qt::Key_0:
+		ui.etSavePath->setText("0");
+		break;
+	case Qt::Key_P:
+		ui.etSavePath->setText("10");
+		break;
+	case Qt::Key_Up:
+		client.enableApiControl(true);
+		client.moveByAngleThrottle(0, 0, 0.588, 1, 50);
+		return;
+	case Qt::Key_Down:
+		client.enableApiControl(false);
+		return;
+	case Qt::Key_H:
+		client.enableApiControl(true);
+		client.moveByAngleThrottle(0, 0, 0.58, 0, 50);
+		client.hover();
+		return;
+	default:
+		return;
+	}
+	if (ui.cbIsFront->isChecked()) {
+		save_img_front_rgb = true;
+	}
+	else {
+		save_img_down_rgb = true;
+	}
 }

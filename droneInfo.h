@@ -3,6 +3,8 @@
 #include <QMutex>  
 #include <QImage>  
 
+#include "estimator.h"
+
 class DroneInfo
 {
 public:
@@ -14,6 +16,63 @@ public:
 	
 	/* Useful Data*/
 	QMutex data_mutex;
+
+	//TODO: maybe put this to image process seperately
+	//不要放在droneInfo里,如果影响效率的话
+	struct ImageProcess
+	{
+		struct ImageCommand
+		{
+			//找到所有的停机坪
+			bool getDownRects = false;
+			//找到所有的圈
+			bool getDownCircs = false;
+			//找到下方的停机坪
+			bool findDownRect = false;
+			//找到下方的圈
+			bool findDownCirc = false;
+			//找到前方圈的圆心轴
+			bool findFrontAxis = false;
+			//识别数字
+			bool recognizeNum = false;
+		}imgCmd;
+
+		struct DownRects
+		{
+			bool updated;
+			std::vector<vec3f_t> rectPoses;
+		}downRects;
+
+		struct DownCircles
+		{
+			bool updated;
+			std::vector<vec3f_t> circPoses;
+		}downCircles;
+
+		struct TheTargetRect
+		{
+			bool updated;
+			vec3f_t rectPose;
+		}theTargetRect;
+
+		struct TheTargetCirc
+		{
+			bool updated;
+			vec3f_t circPose;
+		}theTargetCirc;
+
+		struct TheTargetAxis
+		{
+			bool updated;
+			vec3f_t axisPose;
+		}theTargetAxis;
+
+		struct TheTargetNum
+		{
+			bool updated;
+			int number;
+		}theTargetNum;
+	}imgProcess;
 
 	struct Images
 	{

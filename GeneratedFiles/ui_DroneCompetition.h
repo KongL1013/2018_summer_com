@@ -13,9 +13,11 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -43,6 +45,8 @@ public:
     QLabel *label_FrontImageDep;
     QLabel *label_4;
     QPushButton *pushButton_FrontImgDep_Cap;
+    QLineEdit *etSavePath;
+    QCheckBox *cbIsFront;
     QFrame *frame_3;
     QLabel *label_DownImage;
     QLabel *label_7;
@@ -136,6 +140,12 @@ public:
         pushButton_FrontImgDep_Cap = new QPushButton(frame_2);
         pushButton_FrontImgDep_Cap->setObjectName(QStringLiteral("pushButton_FrontImgDep_Cap"));
         pushButton_FrontImgDep_Cap->setGeometry(QRect(360, 0, 75, 23));
+        etSavePath = new QLineEdit(frame_2);
+        etSavePath->setObjectName(QStringLiteral("etSavePath"));
+        etSavePath->setGeometry(QRect(220, 0, 113, 20));
+        cbIsFront = new QCheckBox(frame_2);
+        cbIsFront->setObjectName(QStringLiteral("cbIsFront"));
+        cbIsFront->setGeometry(QRect(140, 0, 71, 21));
         frame_3 = new QFrame(centralWidget);
         frame_3->setObjectName(QStringLiteral("frame_3"));
         frame_3->setGeometry(QRect(580, 370, 491, 321));
@@ -295,6 +305,7 @@ public:
         label_FrontImageDep->setText(QApplication::translate("DroneCompetitionClass", "Front Image Depth", Q_NULLPTR));
         label_4->setText(QApplication::translate("DroneCompetitionClass", "Front DEP", Q_NULLPTR));
         pushButton_FrontImgDep_Cap->setText(QApplication::translate("DroneCompetitionClass", "Capture", Q_NULLPTR));
+        cbIsFront->setText(QApplication::translate("DroneCompetitionClass", "front", Q_NULLPTR));
         label_DownImage->setText(QApplication::translate("DroneCompetitionClass", "Down Image RGB", Q_NULLPTR));
         label_7->setText(QApplication::translate("DroneCompetitionClass", "Down RGB", Q_NULLPTR));
         pushButton_DownImgRGB_Cap->setText(QApplication::translate("DroneCompetitionClass", "Capture", Q_NULLPTR));
