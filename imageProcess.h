@@ -14,6 +14,9 @@
 #include <opencv2\opencv.hpp> 
 #include <iostream>
 
+#define IMGWIDTH 640
+#define IMGHEIGHT 480
+
 using namespace std;
 using namespace cv;
 
@@ -28,16 +31,17 @@ public:
 	void run();
 	void stop();
 
-
-private:
-
-	void undistort_img(Mat &input_img, Mat &output_img);
 	void downFindAllRectangle(Mat &input_img, std::vector<RotatedRect> &all_location);
 	cv::Rect downFindAllRedCircle(Mat &input_img);
-	void downFindRectangle(Mat &input_img, Mat &output_img);
+	void downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect);
 	void frontFindCircle(Mat &input_img, std::vector<Vec3f> &circles);
 	Rect frontFindRectangle(Mat &input_img);
 	float pixelToLength(int pixel_num, float distance);
+
+
+private:
+
+	void undistort_img(Mat &input_img, Mat &output_img);	
 
 	bool b_stopped;
 

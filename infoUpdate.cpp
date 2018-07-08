@@ -297,9 +297,18 @@ void ImgRetriever::run()
 		QImage q_image_front_dep;
 		float_vector_to_qimage(depth_image[0].image_data_float, q_image_front_dep);
 
+		cv::Mat mat_front_rgb, mat_front_dep, mat_down_rgb;
+		qimage_to_mat(q_image_front_rgb, mat_front_rgb);
+		qimage_to_mat(q_image_front_dep, mat_front_dep);
+		qimage_to_mat(q_image_down_rgb, mat_down_rgb);
 		
 		{
 			QMutexLocker data_locker(&drone_info.data_mutex);
+			
+			mat_front_rgb.copyTo(drone_info.images.mat_front_rgb);
+			mat_front_dep.copyTo(drone_info.images.mat_front_depth);
+			mat_down_rgb.copyTo(drone_info.images.mat_down_rgb);
+			
 			drone_info.images.front_rgb = q_image_front_rgb;
 			drone_info.images.front_depth = q_image_front_dep;
 			drone_info.images.down_rgb = q_image_down_rgb;
@@ -354,5 +363,26 @@ void ImgRetriever::float_vector_to_qimage(msr::airlib::vector<float> &img_vec, Q
 	//QImage image(c_data, 64, 48, QImage::Format_ARGB32_Premultiplied);
 	QImage image(c_data, 64, 48, QImage::Format_ARGB32);
 	img = image;
+}
+
+
+void ImgRetriever::qimage_to_mat(QImage &image, cv::Mat &mat)
+{
+	qDebug() << image.format();
+	switch (image.format())
+	{
+	case QImage::Format_ARGB32:
+	case QImage::Format_RGB32:
+	case QImage::Format_ARGB32_Premultiplied:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC4, (void*)image.constBits(), image.bytesPerLine());
+		break;
+	case QImage::Format_RGB888:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC3, (void*)image.constBits(), image.bytesPerLine());
+		cv::cvtColor(mat, mat, CV_BGR2RGB);
+		break;
+	case QImage::Format_Indexed8:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC1, (void*)image.constBits(), image.bytesPerLine());
+		break;
+	}
 }
 

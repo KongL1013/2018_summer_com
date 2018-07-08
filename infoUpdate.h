@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QThread>
 #include <vector>
+#include <opencv2\opencv.hpp> 
 
 class IMURetriever :public QThread
 {
@@ -82,7 +83,7 @@ public:
 
 	void vector_to_qimage(msr::airlib::vector<uint8_t> &img_vec, QImage &img);
 	void float_vector_to_qimage(msr::airlib::vector<float> &img_vec, QImage &img);
-
+	void qimage_to_mat(QImage &image, cv::Mat &mat);
 
 private:
 	bool b_stopped;

@@ -281,7 +281,7 @@ cv::Rect ImageProcess::downFindAllRedCircle(Mat &input_img) {
 //根据全局坐标，飞到对应停机坪上方固定高度*hight1*处采集图像
 //根据图像，抠取相应的图像区域rect，resize后作为SVM/DNN的输入
 //Output: number rect region
-void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img) {
+void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect) {
 
 	// canny 检测 边缘
 	Mat grey;
@@ -300,11 +300,12 @@ void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img) {
 	//imshow("down", grey);
 	Canny(grey, edges, lowThresh, lowThrestHigh, apatureszie);
 	//imshow("edges",edges);
+	//waitKey();
 
 	//寻找包络
 	std::vector<std::vector<Point>> contours;
 	//threshold(edges, edges, 128, 255, THRESH_BINARY);
-	findContours(edges, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	findContours(edges, contours , CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 	double maxare = 0; int max_i = 0;
 	for (size_t i = 0; i < contours.size(); i++) {  //size_t special typedef
 		double area = contourArea(contours[i]);
@@ -318,13 +319,11 @@ void ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img) {
 
 
 	//拟合最大矩形
-	Rect rect = boundingRect(contours[max_i]);
+	rect = boundingRect(contours[max_i]);
 	Mat rect_roi;
 	input_img(rect).copyTo(rect_roi);
 	//返回矩形片 Mat
 	output_img = rect_roi;
-
-
 }
 
 //-6- find center
@@ -425,7 +424,7 @@ Rect ImageProcess::frontFindRectangle(Mat &input_img) {
 float ImageProcess::pixelToLength(int pixel_num, float distance) {
 	float pixel_scale = 0.001;		//pixel scale in meter  TODO:calibration 单位是m 像素的大小标定结果0.001m -- 1mm
 	float focus_lenght = 0.2695;		//fx=fy=269.5mm
-	float real_length = (pixel_num*pixel_scale)*distance / focus_lenght;  //nx/f=X/z  from camera model
+	float real_length = (pixel_num*pixel_scale) * fabs(distance) / focus_lenght;  //nx/f=X/z  from camera model
 
 	return real_length;
 }

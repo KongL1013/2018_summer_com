@@ -28,7 +28,9 @@ public:
 		POSCTRL = 0,
 		VELCTRL = 1,
 		ATTCTRL,
-		HOVER
+		HOVER,
+		TAKEOFF,
+		LAND
 	}m_mode;
 
 	std::vector<Eigen::Vector3f>  control(const Eigen::Vector3f& pos_est, const Eigen::Vector3f& vel_est, Eigen::Vector4f&  posSp,
@@ -68,6 +70,14 @@ public:
 	{
 		m_mode = HOVER;
 	}
+	void takeoff()
+	{
+		m_mode = TAKEOFF;
+	}
+	void land()
+	{
+		m_mode = LAND;
+	}
 	const float max_thrust = 0.5827*1.3;  //to modify 
 	
 private:
@@ -83,7 +93,5 @@ private:
 	PID m_pidX;
 	PID m_pidY;
 	PID m_pidZ;
-	float m_pitch, m_roll, m_yaw, m_yaw_rate, m_throttle, m_duration;
-	
-	
+	float m_pitch, m_roll, m_yaw, m_yaw_rate, m_throttle, m_duration;	
 };

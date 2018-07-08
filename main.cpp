@@ -12,7 +12,7 @@
 
 DroneInfo drone_info;
 Estimator estimator_thread("estimator_thread");
-ImageProcess  image_process_thread("image_process_thread");
+//ImageProcess  image_process_thread("image_process_thread");
 ProjectOne project_one_thread("project_one_thread");
 
 IMURetriever imu_thread("imu_thread");
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
 	
 	estimator_thread.start();
-	image_process_thread.start();
+	//image_process_thread.start();
 	
 	project_one_thread.start();
 	imu_thread.start();

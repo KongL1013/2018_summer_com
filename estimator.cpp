@@ -12,7 +12,7 @@
 
 #include "attitude_estimator.h"
 
-#define MAG_EST_ALL true //flase: 只估计yaw  true: 修正3个角度
+#define MAG_EST_ALL false //flase: 只估计yaw  true: 修正3个角度
 #define FIX_GYRO_BIAS false //是否修正零漂
 #define USING_ACC_EST_ALT true //是否使用加速度计做修正
 

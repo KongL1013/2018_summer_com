@@ -8,6 +8,7 @@ using namespace msr::airlib;
 extern DroneInfo drone_info;
 extern msr::airlib::MultirotorRpcLibClient client;
 
+#define MAXV 5.0
 
 Controller::Controller(QString name) :
 	  b_stopped(false)
@@ -84,6 +85,12 @@ void Controller::run()
 			QMutexLocker data_locker(&drone_info.data_mutex);
 			droneInfo2Vector3f(drone_info, &posEst, &velEst);  //类型转换，得到Eigen向量方便运算
 		}
+
+		// Eliminate small values of velocity, CHG !!!
+		for(int i = 0; i < 3; i++)
+		{
+			if (fabs(velEst(i)) < 0.08f) velEst(i) = 0.f;
+		}
 			
 		//if (control_cnt == 0)
 		//{
@@ -108,7 +115,15 @@ void Controller::run()
 		else if(m_mode == HOVER)		   //悬停接口
 		{
 			client.hover();
-		}	
+		}
+		else if (m_mode == TAKEOFF)		   //起飞接口
+		{
+			client.moveByAngleThrottle(0.f, 0.f, 0.8f, m_yaw_rate, 0.1f);
+		}
+		else if (m_mode == LAND)		   //降落接口
+		{
+			client.moveByAngleThrottle(0.f, 0.f, 0.4f, m_yaw_rate, 0.1f);
+		}
 		else {							  //位置、速度控制接口
 			std::vector<Eigen::Vector3f> rvel_acc;
 			rvel_acc = control(posEst, velEst, m_posSp, m_velSp, vel_ff, 0.02f, &Output); //控制过程
@@ -125,7 +140,7 @@ void Controller::run()
 			show_string("z- p\t" + QString::number(posEst(2)) + "\tv " + QString::number(velEst(2)) + "\tth " +  QString::number(throttle) + "\tys " + QString::number(yaw_rate) + "\n");*/
 
 
-			show_string(QString::number(posEst(0)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(posEst(2)) + "\n");
+			//show_string(QString::number(posEst(0)) + "\t" + QString::number(posEst(1)) + "\t" + QString::number(posEst(2)) + "\n");
 
 			client.moveByAngleThrottle(m_pitch, m_roll, m_throttle, m_yaw_rate, m_duration);
 
@@ -194,9 +209,12 @@ std::vector<Eigen::Vector3f> Controller::control(const Eigen::Vector3f& pos_est,
 		float vy_temp_est = vel_est(1);
 		float vz_temp_est = vel_est(2);
 
-		float vx_sp = vel_Sp(0);
-		float vy_sp = vel_Sp(1);
-		float vz_sp = vel_Sp(2);
+		// Velocity limitation, CHG
+		for (int i = 0; i < 3; i++)
+		{
+			if (fabs(vel_Sp(i)) > MAXV)
+				vel_Sp(i) = vel_Sp(i) / fabs(vel_Sp(i)) * MAXV;
+		}
 
 		_acc_Sp_W(0) = m_pidX.pid_update(vx_temp_est, vel_Sp(0), dt);
 		_acc_Sp_W(1) = m_pidY.pid_update(vy_temp_est, vel_Sp(1), dt);

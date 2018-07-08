@@ -71,7 +71,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>E:\competition2018\AirSim-master\AirLib\deps\rpclib\lib\x64\Debug;E:\competition2018\AirSim-master\AirLib\lib\x64\Debug;E:\competition2018\AirSim-master\AirLib\deps\MavLinkCom\lib\x64\Debug;$(ProjectDir)\..\..\..\AirLib\lib\$(Platform)\$(Configuration);$(ProjectDir)\..\..\..\AirLib\deps\rpclib\lib\$(Platform)\$(Configuration);$(ProjectDir)\..\..\..\AirLib\deps\MavLinkCom\lib\$(Platform)\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>AirLib.lib;rpc.lib;opencv_world320.lib;opencv_world320d.lib;qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>AirLib.lib;rpc.lib;opencv_world320d.lib;opencv_world320.lib;qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>

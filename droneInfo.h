@@ -2,7 +2,7 @@
 
 #include <QMutex>  
 #include <QImage>  
-
+#include <opencv2\opencv.hpp> 
 #include "estimator.h"
 
 class DroneInfo
@@ -79,6 +79,10 @@ public:
 		QImage front_rgb;
 		QImage front_depth;
 		QImage down_rgb;
+
+		cv::Mat mat_front_rgb;
+		cv::Mat mat_front_depth;
+		cv::Mat mat_down_rgb;
 		 
 		long int time_stamp_front_rgb;  //MS
 		long int time_stamp_front_depth;

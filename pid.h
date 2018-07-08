@@ -83,6 +83,8 @@ public:
 	float pp_update(float est, float setpt)
 	{
 		float error = setpt - est;
+		if (fabs(error) > 2.0) error = 2.0 * error / fabs(error); // CHG
+
 		float output = m_kpp * error;
 		
 		return output;
