@@ -301,7 +301,6 @@ void Estimator::run()
 	gps_last[1] = 0.0;
 	gps_last[2] = 0.0;
 
-
 	while (true)
 	{
 		//查询数据是否更新
@@ -891,4 +890,10 @@ void PVAKF::get_predict_value(double p, double v, double a, double spa, double d
 	rp = x(0);
 	rv = x(1);
 	ra = x(2);
+}
+
+double distOfTwoPoint(double x1, double y1, double x2, double y2) {
+	double dx = x1 - x2;
+	double dy = y1 - y2;
+	return sqrt(dx * dx + dy * dy);
 }

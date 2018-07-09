@@ -105,3 +105,4 @@ void quaternion2rotation(const quaternion_t* Q, rotation_t* R);
 void rotation2euler(const rotation_t* R, vec3f_t* Euler);
 void inertial_filter_correct(double e, double dt, double x[2], int i, double w);
 void inertial_filter_predict(double dt, double x[2], double acc);
+double distOfTwoPoint(double x1, double y1, double x2, double y2);

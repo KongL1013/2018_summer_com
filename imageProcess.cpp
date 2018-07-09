@@ -264,8 +264,8 @@ void ImageProcess::downFindAllRectangle(Mat &input_img, std::vector<RotatedRect>
 	cv::Rect r = cv::boundingRect(contours[i]);
 	cv::rectangle(result1, r, cv::Scalar(255));
 	}
-	cv::imshow("all regions", result1);
-	cv::waitKey(10);
+	//cv::imshow("all regions", result1);
+	//cv::waitKey(10);
 
 	cv::rectangle(result2, maxRect, cv::Scalar(255));
 	cv::imshow("largest region", result2);
@@ -274,7 +274,7 @@ void ImageProcess::downFindAllRectangle(Mat &input_img, std::vector<RotatedRect>
 	
 
 	bool sign_circle = false;
-	if (maxRect.area() >= 200) sign_circle = true;
+	if (maxRect.area() >= 1000) sign_circle = true;
 
 	return sign_circle;
 }
@@ -335,11 +335,6 @@ bool ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect
 	//返回矩形片 Mat
 	output_img = rect_roi;
 
-	//TODO:delete
-	imshow("rect_down", rect_roi);   //check
-	waitKey(10);
-
-
 	return sign_rect;
 }
 
@@ -347,11 +342,30 @@ bool ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect
 //If the drone in front of the circle, we could use the houghcircle to detect the cycle and center//if not work use the frontFindRectangle mass center
 //根据全局坐标， 飞到对应的圈前面，固定高度*hight2*和前面距离*distance*
 //Output: circle center  得到对应圈的中心
-void ImageProcess::frontFindCircle(Mat &input_img, std::vector<Vec3f> &circles) {
+bool ImageProcess::frontFindCircle(Mat &input_img, Vec3f &bigCircle) {
+	
+	/*
+	Rect red_region = frontFindRectangle(input_img);		//find whole circle and pillar
+	Mat rect_roi;
+	input_img(red_region).copyTo(rect_roi);
+	imshow("front rect_roi", rect_roi);
+	*/
+	
 	Mat grey;
+	std::vector<Vec3f> circles;
 	cvtColor(input_img, grey, COLOR_BGR2GRAY);
 	GaussianBlur(grey, grey, Size(9, 9), 2, 2);
 	HoughCircles(grey, circles, HOUGH_GRADIENT, 1.5, 10, 200, 50, 100, 200);
+	double biggest = 0;
+	for (auto const circle : circles) {
+		if (circle[2] > biggest) {
+			bigCircle = circle;
+			biggest = circle[2];
+		}
+	}
+	circle(input_img, { (int)bigCircle[0], (int)bigCircle[1] }, 3, Scalar(255, 0, 0), -1, 8, 0);
+	return biggest > 20.0;
+
 
 	//TODO: Find the biggest one argmax(circles.r)
 	/*
@@ -376,7 +390,7 @@ void ImageProcess::frontFindCircle(Mat &input_img, std::vector<Vec3f> &circles) 
 //根据全局坐标， 飞到对应的圈前面，固定高度*hight2*和前面距离*distance*
 //根据图像，抠取相应的图像区域rect，resize后作为SVM/DNN的输入
 //Output: number rect region
-Rect ImageProcess::frontFindRectangle(Mat &input_img) {
+bool ImageProcess::frontFindRectangle(Mat &input_img, Rect &maxRect) {
 
 
 	//find read region
@@ -389,16 +403,23 @@ Rect ImageProcess::frontFindRectangle(Mat &input_img) {
 
 	inRange(img_hsv, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), red_out); //Threshold the image
 
-																							//imshow("origin", input_img);
-																							//imshow("hsv", red_out);
+	//imshow("origin", input_img);
+	//imshow("hsv", red_out);
 
 
 
-																							//if find circle in the sunny side, hough is enough!
+	//if find circle in the sunny side, hough is enough!
+	Mat element1 = getStructuringElement(MORPH_RECT, Size(30, 30));		
+	Mat element2 = getStructuringElement(MORPH_RECT, Size(10, 10));		//调节参数使下面的杆影响减小  往大了调
+	dilate(red_out, red_out, element1);
+	erode(red_out, red_out, element2);
+	
+	/*
 	Mat element1 = getStructuringElement(MORPH_RECT, Size(3, 3));
 	Mat element2 = getStructuringElement(MORPH_RECT, Size(30, 30));
 	erode(red_out, red_out, element1);
 	dilate(red_out, red_out, element2);
+	*/
 	imshow("dilate", red_out);
 
 	std::vector<std::vector<Point>> contours;
@@ -423,13 +444,15 @@ Rect ImageProcess::frontFindRectangle(Mat &input_img) {
 	}
 
 	// 将轮廓转为矩形框
-	cv::Rect maxRect = cv::boundingRect(maxContour);
-	maxRect.height = maxRect.height * 2;
+	maxRect = cv::boundingRect(maxContour);
+	maxRect.height = maxRect.height;// *2; 正面不需要*2
 	cv::rectangle(circle_font, maxRect, cv::Scalar(255));
 	//cv::imshow("largest region", circle_font);
 	//waitKey();
 	//cout << maxRect << endl;
-	return maxRect;		//return the corase  X,Y  location of circle
+	bool front_bool = false;
+	if (maxRect.area() > 2000) 	front_bool = true;
+	return front_bool;		//return the corase  X,Y  location of circle
 						//根据这个大小推断出下面数字的片元，相同的宽度下高度变成二倍来减出片元，其中包含数字。
 
 }

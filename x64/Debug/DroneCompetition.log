@@ -30,5 +30,5 @@ C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1017): warning C4005: “M_SQRT1_2”: 宏重定义
   d:\softwares\qt5\5.9.2\msvc2017_64\include\qtcore\qmath.h(201): note: 参见“M_SQRT1_2”的前一个定义
 D:\softwares\opencv\320\opencv\build\include\opencv2/imgproc.hpp(592): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\DroneCompetition\DroneCompetition\x64\Debug\DroneCompetition.exe
-  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\DroneCompetition\DroneCompetition\x64\Debug\DroneCompetition.pdb (Full PDB)
+  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.exe
+  DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.pdb (Full PDB)
