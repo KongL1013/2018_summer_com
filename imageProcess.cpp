@@ -605,6 +605,79 @@ bool ImageProcess::downFindTree(Mat &input_img, Mat &roi, Rect &rect) {
 }
 
 
+// -9- 二维码识别 ArUco
+//输入图像,输出处理后的二维码
+//ids里面数为识别出的二维码  corners中是对应角点
+//ArUoc文档:https://docs.opencv.org/3.4/d5/dae/tutorial_aruco_detection.html
+bool ImageProcess::detect_2d_coder(Mat &inputImg, Mat &roi, std::vector<int> &ids, std::vector<std::vector<cv::Point2f>> &corners) {
+
+	cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);  //定义码表
+	cv::Mat grey;
+	Mat bina;
+
+	bool find_2d = false;
+	cvtColor(inputImg, grey, COLOR_BGR2GRAY);
+	threshold(grey, bina, 175, 255, THRESH_BINARY);
+
+	Mat element1 = getStructuringElement(MORPH_RECT, Size(7, 7));
+	Mat element2 = getStructuringElement(MORPH_RECT, Size(20, 20));
+	erode(bina, bina, element1);
+	dilate(bina, bina, element2);
+
+	std::vector<std::vector<Point>> contours;
+	//threshold(edges, edges, 128, 255, THRESH_BINARY);
+	findContours(bina, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	double maxare = 0; int max_i = 0;
+	for (size_t i = 0; i < contours.size(); i++) {  //size_t special typedef
+		double area = contourArea(contours[i]);
+		if (area > maxare) {
+			maxare = area;
+			max_i = i;
+		}
+	}
+
+	//拟合最大矩形
+	if (contours.size() < 1) return false;
+
+	Rect rect = boundingRect(contours[max_i]);
+	Mat background(rect.width * 2, rect.height * 2, CV_8UC1, Scalar(255));
+	Mat rect_roi;
+	grey(rect).copyTo(rect_roi);
+
+	int start_x = rect.width * 0.5;
+	int start_y = rect.height * 0.5;
+
+	//拓展边框,为了更好的检测角点
+	for (int i = start_x; i < rect.width * 1.5; i++)
+	{
+		for (int j = start_y; j < rect.height * 1.5; j++)
+		{
+			background.at<uchar>(j, i) = rect_roi.at<uchar>(j - start_y, i - start_x);
+		}
+	}
+
+	//返回矩形片 Mat
+	background.copyTo(roi);
+
+	background = background > 100;
+
+
+	//corners 为角点   ids为对应的标号,如果只有一个,vector就只返回一个.
+	cv::aruco::detectMarkers(roi, dictionary, corners, ids);
+
+	//cout << ids[0] << endl;
+
+	if (ids.size() > 0)
+	{
+		cv::aruco::drawDetectedMarkers(roi, corners, ids);		//检测二维码ArUco
+		//cout << "detected!!!" << endl;
+		if (rect.area() > 1000) {
+			find_2d = true;
+		}
+	}
+	return find_2d;
+}
+
 
 //由像素转换为实际距离,目前内参为269.5mm,计算出像素单元大小为:
 //distance 为距离目标的高度或者深度信息  update/

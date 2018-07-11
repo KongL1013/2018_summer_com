@@ -21,7 +21,7 @@ STRICT_MODE_ON
 #define IMGHEIGHT 480
 
 #define STARTNUM 0
-#define MANUAL_CONTROL true
+#define MANUAL_CONTROL false
 
 using namespace std;
 using namespace msr::airlib;
@@ -736,6 +736,26 @@ void ProjectOne::StubToQR() {
 	msleep(500);
 	QuickDownTo(-5.7, 0.5);
 	//TODO take picture
+
+	cv::Mat front_img_qr;
+	cv::Mat qr_roi;
+
+	{
+		QMutexLocker data_locker(&drone_info.data_mutex);
+		drone_info.images.mat_front_rgb.copyTo(front_img_qr);
+	}
+
+	std::vector<int> ids;
+	std::vector<std::vector<cv::Point2f>> corners;
+
+	if (image_process_thread.detect_2d_coder(front_img_qr, qr_roi, ids, corners))
+	{
+		/*TODO SAVE IMAGE AND TXT*/
+		// As demanded format
+		show_string("ID: " + QString::number(ids[0]) + "Left Top:" + QString::number(corners[0][0].x) + "," + QString::number(corners[0][0].y) + "Right Bottom:" + QString::number(corners[0][1].x) + "," + QString::number(corners[0][1].y));
+
+	}
+
 	controller_thread.hover();
 	msleep(1000);
 	show_string("arrive QR...\n");

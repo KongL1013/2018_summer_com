@@ -38,8 +38,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>D:\softwares\opencv\320\opencv\build\include;E:\competition2018\AirSim-master\AirLib\include\api;E:\competition2018\AirSim-master\AirLib\include\vehicles\multirotor\api;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\softwares\opencv\320\opencv\build\x64\vc14\lib;E:\competition2018\AirSim-master\AirLib\lib\x64\Release;E:\competition2018\AirSim-master\MavLinkCom\lib\x64\Release;E:\competition2018\AirSim-master\AirLib\deps\rpclib\lib\x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\B200-1080-WIN10\Downloads\opencv-3.4\build\install\include;E:\competition2018\AirSim-master\AirLib\include\api;E:\competition2018\AirSim-master\AirLib\include\vehicles\multirotor\api;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\B200-1080-WIN10\Downloads\opencv-3.4\build\install\x64\vc15\lib;E:\competition2018\AirSim-master\AirLib\lib\x64\Release;E:\competition2018\AirSim-master\MavLinkCom\lib\x64\Release;E:\competition2018\AirSim-master\AirLib\deps\rpclib\lib\x64\Release;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -103,7 +103,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>E:\competition2018\AirSim-master\AirLib\deps\rpclib\lib\x64\Release;E:\competition2018\AirSim-master\AirLib\lib\x64\Release;E:\competition2018\AirSim-master\AirLib\deps\MavLinkCom\lib\x64\Release;$(ProjectDir)\..\..\..\AirLib\lib\$(Platform)\$(Configuration);$(ProjectDir)\..\..\..\AirLib\deps\rpclib\lib\$(Platform)\$(Configuration);$(ProjectDir)\..\..\..\AirLib\deps\MavLinkCom\lib\$(Platform)\$(Configuration);$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;AirLib.lib;rpc.lib;opencv_world320.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;AirLib.lib;rpc.lib;opencv_aruco342.lib;opencv_bgsegm342.lib;opencv_bioinspired342.lib;opencv_calib3d342.lib;opencv_ccalib342.lib;opencv_core342.lib;opencv_datasets342.lib;opencv_dnn342.lib;opencv_dnn_objdetect342.lib;opencv_dpm342.lib;opencv_face342.lib;opencv_features2d342.lib;opencv_flann342.lib;opencv_fuzzy342.lib;opencv_hfs342.lib;opencv_highgui342.lib;opencv_imgcodecs342.lib;opencv_imgproc342.lib;opencv_img_hash342.lib;opencv_line_descriptor342.lib;opencv_ml342.lib;opencv_objdetect342.lib;opencv_optflow342.lib;opencv_phase_unwrapping342.lib;opencv_photo342.lib;opencv_plot342.lib;opencv_reg342.lib;opencv_rgbd342.lib;opencv_saliency342.lib;opencv_shape342.lib;opencv_stereo342.lib;opencv_stitching342.lib;opencv_structured_light342.lib;opencv_superres342.lib;opencv_surface_matching342.lib;opencv_text342.lib;opencv_tracking342.lib;opencv_video342.lib;opencv_videoio342.lib;opencv_videostab342.lib;opencv_xfeatures2d342.lib;opencv_ximgproc342.lib;opencv_xobjdetect342.lib;opencv_xphoto342.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>

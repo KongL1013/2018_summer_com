@@ -13,12 +13,15 @@
 #include <opencv2\highgui\highgui.hpp>
 #include <opencv2\opencv.hpp> 
 #include <iostream>
+#include <opencv2/aruco.hpp>
+
 
 #define IMGWIDTH 640
 #define IMGHEIGHT 480
 
 using namespace std;
 using namespace cv;
+using namespace aruco;
 
 /* You may need openCV header files here */
 
@@ -38,6 +41,7 @@ public:
 	bool frontFindCircle(Mat &input_img, Vec3f &bigCircle);
 	bool frontFindRectangle(Mat &input_img, Rect &maxRect);
 	bool downFindTree(Mat &input_img, Mat &roi, Rect &rect);
+	bool detect_2d_coder(Mat &inputImg, Mat &roi, std::vector<int> &ids, std::vector<std::vector<cv::Point2f>> &corners);
 	float pixelToLength(int pixel_num, float distance);
 
 
