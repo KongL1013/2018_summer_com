@@ -32,6 +32,7 @@ public:
 	PVAKF();
 
 	void get_predict_value(double p, double v, double a, double spa, double dt, double &rp, double &rv, double &ra);
+	void restart(double p, double v, double a);
 
 	Eigen::Matrix3d Q; // Noise matrix
 	Eigen::Matrix3d H; // p, v, a sensibility. Normally, if you use a sensor, set the corresponding diagonal element to 1, otherwise 0.

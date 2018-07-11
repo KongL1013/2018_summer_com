@@ -1,4 +1,4 @@
-﻿  projectOne.cpp
+﻿  estimator.cpp
 D:\softwares\opencv\320\opencv\build\include\opencv2/core/mat.hpp(2586): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 D:\softwares\opencv\320\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
 D:\softwares\opencv\320\opencv\build\include\opencv2/core/utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
@@ -14,7 +14,7 @@ C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1009): warning C4005: “M_LN10”: 宏重定义
   d:\softwares\qt5\5.9.2\msvc2017_64\include\qtcore\qmath.h(169): note: 参见“M_LN10”的前一个定义
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1010): warning C4005: “M_PI”: 宏重定义
-  E:\competition2018\AirSim-master\AirLib\include\common/common_utils/Utils.hpp(38): note: 参见“M_PI”的前一个定义
+  d:\softwares\qt5\5.9.2\msvc2017_64\include\qtcore\qmath.h(173): note: 参见“M_PI”的前一个定义
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1011): warning C4005: “M_PI_2”: 宏重定义
   d:\softwares\qt5\5.9.2\msvc2017_64\include\qtcore\qmath.h(177): note: 参见“M_PI_2”的前一个定义
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1012): warning C4005: “M_PI_4”: 宏重定义
@@ -30,5 +30,11 @@ C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.10.25017\include\math.h(1017): warning C4005: “M_SQRT1_2”: 宏重定义
   d:\softwares\qt5\5.9.2\msvc2017_64\include\qtcore\qmath.h(201): note: 参见“M_SQRT1_2”的前一个定义
 D:\softwares\opencv\320\opencv\build\include\opencv2/imgproc.hpp(592): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+estimator.cpp(238): warning C4838: 从“const double”转换到“float”需要收缩转换
+estimator.cpp(238): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(365): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(366): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(411): warning C4838: 从“double”转换到“float”需要收缩转换
+estimator.cpp(482): warning C4838: 从“double”转换到“float”需要收缩转换
   DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.exe
   DroneCompetition.vcxproj -> E:\competition2018\AirSim-master\x64\Debug\DroneCompetition.pdb (Full PDB)

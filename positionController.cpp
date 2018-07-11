@@ -14,7 +14,7 @@ Controller::Controller(QString name) :
 	  b_stopped(false)
 	//, isPosControl(true)
 	, m_mode(HOVER)
-	, m_pidX(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3) //kp, kd, ki, kpp, ff, minOutput, maxOutput, integratorMin, integratorMax;
+	, m_pidX(1.7f, 0.03, 0.07, 1.15f, 0.0, -2.f, 5.f, -0.3, 0.3) //kp, kd, ki, kpp, ff, minOutput, maxOutput, integratorMin, integratorMax;
 	, m_pidY(1.7f, 0.03, 0.07, 1.f, 0.0, -2.f, 5.f, -0.3, 0.3)//kp 22 kd 1.8 ki 2.0 kpp 7
 	, m_pidZ(2.f, 0.01, 0.05, 1.f, 0.0, -1.f, 10.f, -2, 2)//kpp 3
 	{
@@ -115,6 +115,10 @@ void Controller::run()
 		else if(m_mode == HOVER)		   //悬停接口
 		{
 			client.hover();
+			{
+				QMutexLocker data_locker(&drone_info.data_mutex);
+				drone_info.local_position.velSet2Zero = true;
+			}
 		}
 		else if (m_mode == TAKEOFF)		   //起飞接口
 		{

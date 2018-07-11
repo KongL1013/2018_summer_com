@@ -3,6 +3,8 @@
 #include "droneInfo.h"
 #include "qout.h"
 
+#include "imageProcess.h"
+
 #include <qevent.h>
 
 extern Estimator estimator_thread;
@@ -10,6 +12,12 @@ extern DroneInfo drone_info;
 extern QString text_output;
 extern QMutex qout_mutex;
 extern QOUT qout_thread;
+
+//TEMP ¡ý
+extern ImageProcess image_process_thread;
+cv::Mat down_mat;
+cv::Mat result_down;
+cv::Rect num_rect_down;
 
 DroneCompetition::DroneCompetition(QWidget *parent)
 	: QMainWindow(parent)
@@ -307,6 +315,21 @@ void DroneCompetition::keyPressEvent(QKeyEvent  *event) {
 		break;
 	case Qt::Key_P:
 		ui.etSavePath->setText("10");
+		break;
+	case Qt::Key_M:
+		{
+			QMutexLocker data_locker(&drone_info.data_mutex);
+			drone_info.images.mat_down_rgb.copyTo(down_mat);
+		}
+		//show_string(QString::number(image_process_thread.downFindRectangle_stone(down_mat, result_down, num_rect_down)));
+
+		image_process_thread.downFindRectangle(down_mat, result_down, num_rect_down);
+
+		cv::imshow("down_mat", down_mat);
+		cv::waitKey(1);
+
+		cv::imshow("cut_board", result_down);
+		cv::waitKey(1);
 		break;
 	case Qt::Key_Up:
 		client.enableApiControl(true);

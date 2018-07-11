@@ -338,6 +338,91 @@ bool ImageProcess::downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect
 	return sign_rect;
 }
 
+//-8- 
+//根据全局坐标，飞到对应停机坪上方固定高度*hight1*处采集图像
+//解决石头问题
+//根据图像，抠取相应的图像区域rect，resize后作为SVM/DNN的输入
+//Output: number rect region
+
+bool ImageProcess::downFindRectangle_stone(Mat &input_img, Mat &output_img, Rect &rect) {
+
+	// canny 检测 边缘
+	Mat grey;
+	Mat edges;
+	int lowThresh = 70; int lowThrestHigh = 100; int apatureszie = 3;
+
+	cvtColor(input_img, grey, COLOR_BGR2GRAY);
+	//imshow("grey", grey);
+
+	//denoise
+	//blur(grey, grey, Size(3, 3));
+	blur(grey, grey, Size(15, 15));		//利用模糊将石头区域变灰,利于二值化去除
+	//imshow("blur", grey);
+	threshold(grey, grey, 170, 255, CV_THRESH_BINARY);		//二值化去除石头
+	//imshow("bina", grey);
+
+
+	Mat element0 = getStructuringElement(MORPH_RECT, Size(3, 3));		
+	Mat element1 = getStructuringElement(MORPH_RECT, Size(5, 5));	//调大去除小块白色
+	Mat element2 = getStructuringElement(MORPH_RECT, Size(7, 7));	//调大去除黑色
+	dilate(grey, grey, element0);		//去除停机坪黑边
+	erode(grey, grey, element1);		//去除石头影响
+	//imshow("erode", grey);
+	//waitKey();
+	dilate(grey, grey, element2);		//扩大停机坪白色
+	//imshow("dilate", grey);
+	//waitKey();
+	//morphologyEx(grey, grey, MORPH_CLOSE, element);
+	//blur(grey, grey, Size(2, 2));
+
+
+	imshow("down", grey);
+	Canny(grey, edges, lowThresh, lowThrestHigh, apatureszie);
+	imshow("edges", edges);
+
+
+	//寻找包络
+	std::vector<std::vector<Point>> contours;
+	//threshold(edges, edges, 128, 255, THRESH_BINARY);
+	findContours(edges, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	double maxare = 0; int max_i = 0;
+	for (size_t i = 0; i < contours.size(); i++) {  //size_t special typedef
+		double area = contourArea(contours[i]);
+		if (area > maxare) {
+			maxare = area;
+			max_i = i;
+		}
+		//cout << contours.size()<<"   "<< max_i << endl;
+
+	}
+
+
+	//拟合最大矩形
+	if (!contours.empty()) {
+		rect = boundingRect(contours[max_i]);
+	}
+	else {
+		return false;
+	}
+	
+	Mat rect_roi;
+	input_img(rect).copyTo(rect_roi);
+	//返回矩形片 Mat
+	output_img = rect_roi;
+
+	//imshow("roi", rect_roi);
+	//waitKey();
+
+	bool rect_8 = false;
+	if (rect.area() > 5000) {
+		cout << rect.area() << endl;
+		rect_8 = true;
+	}
+	return rect_8;
+
+}
+
+
 //-6- find center
 //If the drone in front of the circle, we could use the houghcircle to detect the cycle and center//if not work use the frontFindRectangle mass center
 //根据全局坐标， 飞到对应的圈前面，固定高度*hight2*和前面距离*distance*
@@ -454,6 +539,68 @@ bool ImageProcess::frontFindRectangle(Mat &input_img, Rect &maxRect) {
 	if (maxRect.area() > 2000) 	front_bool = true;
 	return front_bool;		//return the corase  X,Y  location of circle
 						//根据这个大小推断出下面数字的片元，相同的宽度下高度变成二倍来减出片元，其中包含数字。
+
+}
+
+
+//寻找树桩的中心.
+//输入图像,可以得到输出的roi和对应roi的矩形x,y,w,h.
+//中心为 x+w/2, y+h/2;
+bool ImageProcess::downFindTree(Mat &input_img, Mat &roi, Rect &rect) {
+
+	Mat gray;
+	cvtColor(input_img, gray, CV_BGR2GRAY);
+	imshow("gray", gray);
+	blur(gray, gray, Size(3, 3));
+
+	Mat binary;
+	threshold(gray, binary, 175, 255, THRESH_BINARY);
+	imshow("binary1", binary);
+
+	Mat element1 = getStructuringElement(MORPH_RECT, Size(7, 7));
+	Mat element2 = getStructuringElement(MORPH_RECT, Size(10, 10));
+
+	//imshow("binary", binary);
+	///waitKey();
+
+	erode(binary, binary, element1);
+	dilate(binary, binary, element2);
+	imshow("binary", binary);
+	//waitKey();
+
+	std::vector<std::vector<Point>> contours;
+	//threshold(edges, edges, 128, 255, THRESH_BINARY);
+	findContours(binary, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	double maxare = 0; int max_i = 0;
+	for (size_t i = 0; i < contours.size(); i++) {  //size_t special typedef
+		double area = contourArea(contours[i]);
+		if (area > maxare) {
+			maxare = area;
+			max_i = i;
+		}
+		//cout << contours.size()<<"   "<< max_i << endl;
+
+	}
+
+	if (contours.empty()) {
+		return false;
+	}
+	//拟合最大矩形
+	rect = boundingRect(contours[max_i]);
+	Mat rect_roi;
+	input_img(rect).copyTo(rect_roi);
+	//返回矩形片 Mat
+	roi = rect_roi;
+
+	imshow("roi", rect_roi);
+
+
+	bool tree = false;
+	if (rect.area() > 2000) {
+		tree = true;
+	}
+
+	return tree;
 
 }
 

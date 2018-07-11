@@ -257,13 +257,13 @@ void Estimator::run()
 	pva_x.std_dev(1) = 1.0; //v 
 	pva_x.std_dev(2) = 0.032;//a
 	pva_x.spa_weight = 0.0;
-	pva_x.p2v_weight = 0.02;
+	pva_x.p2v_weight = 0.04;
 
 	pva_y.std_dev(0) = 2.0; //p
 	pva_y.std_dev(1) = 1.0; //v 
 	pva_y.std_dev(2) = 0.005;//a
 	pva_y.spa_weight = 0.0;
-	pva_y.p2v_weight = 0.015;
+	pva_y.p2v_weight = 0.03;
 
 	pva_z.std_dev(0) = 0.2; //p
 	pva_z.std_dev(1) = 1.0; //v 
@@ -289,6 +289,11 @@ void Estimator::run()
 	double fake_vx = 0.0;
 	double fake_vy = 0.0;
 	double fake_vz = 0.0;
+
+	bool velSet2zero;
+
+	int p_error_counter_x = 0;
+	int p_error_counter_y = 0;
 
 	// Initialize gps buffer & last
 	for (int i = 0; i < 5; i++)
@@ -334,10 +339,18 @@ void Estimator::run()
 			ground_x = drone_info.ground_truth.px;
 			ground_y = drone_info.ground_truth.py;
 			ground_z = drone_info.ground_truth.pz;
+
+			velSet2zero = drone_info.local_position.velSet2Zero;
+			drone_info.local_position.velSet2Zero = false;
 		}
 
 		//时间流逝
 		double dt = dtTimer.elapsed() * 0.001;
+		static unsigned int counter;
+		counter++;
+		if (counter < 10) {
+			show_string("delay:" + QString::number(dt) );
+		}
 		dtTimer.restart();
 
 		/** 姿态估计*/
@@ -571,12 +584,34 @@ void Estimator::run()
 			pva_x.get_predict_value(gps_x, fake_vx, acc_buffer[0][0], 0.0, dt, px, vx, ax);
 			pva_y.get_predict_value(gps_y, fake_vy, acc_buffer[0][1], 0.0, dt, py, vy, ay);
 			//pva_z.get_predict_value(baro_now / 2.0, fake_vz, acc_buffer[0][2], 0.0, dt, pz, vz, az);
-			pz = baro_now / 2.0;
+			pz = baro_now;
 
 			// Using acc to make up delayed data
 			vx = fake_vx;
 			vy = fake_vy;
 			vz = fake_vz;
+
+			// Resart EKF if error is too large
+			if (abs(px - gps_avg_x) > 1.5)
+			{
+				p_error_counter_x++;
+			}
+			if (p_error_counter_x > 3)
+			{
+				pva_x.restart(gps_avg_x, fake_vx, 0.0);
+				p_error_counter_x = 0;
+			}
+			if (abs(py - gps_avg_y) > 1.5)
+			{
+				p_error_counter_y++;
+			}
+			if (p_error_counter_y > 3)
+			{
+				pva_y.restart(gps_avg_y, fake_vy, 0.0);
+				p_error_counter_y = 0;
+			}
+
+
 
 			for (int i = 1; i < buf_length; i++)
 			{
@@ -586,6 +621,17 @@ void Estimator::run()
 				vx += acc_buffer[i][0] * time_buffer[i];
 				vy += acc_buffer[i][1] * time_buffer[i];
 				vz += acc_buffer[i][2] * time_buffer[i];
+			}
+
+
+			if (velSet2zero) {
+				velSet2zero = false;
+				vx = 0;
+				vy = 0;
+				vz = 0;
+				fake_vx = 0;
+				fake_vy = 0;
+				fake_vz = 0;
 			}
 			//print4num(fake_vz, vz, pz, baro_now / 2.0);
 		}
@@ -850,7 +896,6 @@ void PVAKF::get_predict_value(double p, double v, double a, double spa, double d
 	F(0, 2) = 0.5 * dt * dt;
 	F(1, 2) = dt;
 
-
 	Vector3d sp_influence = Vector3d::Zero();
 	if (spa_weight > 0.01)
 	{
@@ -868,7 +913,6 @@ void PVAKF::get_predict_value(double p, double v, double a, double spa, double d
 	{
 		x(1) = (1.0 - p2v_weight) * x(1) + p2v_weight * dif_v;
 	}
-
 	
 	P = F * P * F.transpose() + Q; // KF 2
 
@@ -890,6 +934,13 @@ void PVAKF::get_predict_value(double p, double v, double a, double spa, double d
 	rp = x(0);
 	rv = x(1);
 	ra = x(2);
+}
+
+void PVAKF::restart(double p, double v, double a)
+{
+	x(0) = p;
+	x(1) = v;
+	x(2) = a;
 }
 
 double distOfTwoPoint(double x1, double y1, double x2, double y2) {

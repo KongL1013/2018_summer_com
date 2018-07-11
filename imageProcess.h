@@ -34,8 +34,10 @@ public:
 	void downFindAllRectangle(Mat &input_img, std::vector<RotatedRect> &all_location);
 	bool downFindRedCircle(Mat &input_img, cv::Rect& maxRect);
 	bool downFindRectangle(Mat &input_img, Mat &output_img, Rect &rect);
+	bool downFindRectangle_stone(Mat &input_img, Mat &output_img, Rect &rect);
 	bool frontFindCircle(Mat &input_img, Vec3f &bigCircle);
 	bool frontFindRectangle(Mat &input_img, Rect &maxRect);
+	bool downFindTree(Mat &input_img, Mat &roi, Rect &rect);
 	float pixelToLength(int pixel_num, float distance);
 
 

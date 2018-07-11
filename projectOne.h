@@ -25,10 +25,22 @@ public:
 
 
 private:
-	void AimBoardType1();
-	void AimBoardType2();
+	void LandOnBoard();
+	void AimBoardHigh();
+	void AimBoardLow();
+	void AimCircleDown();
+	void AimCircleFront();
+	void QuickDownTo(double height, double thr);
+	void QuickUpTo(double height, double thr);
+	void StubToQR();
+	void SaveImg(QString path, QString name, QImage & image);
+	void AimStubDown();
+
 	bool b_stopped;
 	QMutex m_mutex;
 	bool points_close(double x1, double y1, double z1, double x2, double y2, double z2, double limit = 0.2);
 	void yawTurnTo(double target, double thr = 0.587);
+	void MoveTo(double px, double py, double pz, double yaw, double tollerance);
+	double constrainNum(double x, double up, double down);
+	bool stone_area;
 };

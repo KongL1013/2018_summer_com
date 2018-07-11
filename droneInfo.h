@@ -169,6 +169,8 @@ public:
 			double vz;
 		}velocity;
 
+		bool velSet2Zero = false; //gcy added
+
 	}local_position;
 
 	struct GlobalPosition
