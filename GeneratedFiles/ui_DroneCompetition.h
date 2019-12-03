@@ -35,7 +35,6 @@ public:
     QWidget *centralWidget;
     QTabWidget *tabWidget_PaintArea;
     QWidget *tab;
-    QTextBrowser *textBrowser;
     QFrame *frame;
     QLabel *label_FrontImage;
     QLabel *label_2;
@@ -47,6 +46,7 @@ public:
     QPushButton *pushButton_FrontImgDep_Cap;
     QLineEdit *etSavePath;
     QCheckBox *cbIsFront;
+    QTextBrowser *textBrowser;
     QFrame *frame_3;
     QLabel *label_DownImage;
     QLabel *label_7;
@@ -105,9 +105,6 @@ public:
         tabWidget_PaintArea->setGeometry(QRect(20, 40, 446, 290));
         tab = new QWidget();
         tab->setObjectName(QStringLiteral("tab"));
-        textBrowser = new QTextBrowser(tab);
-        textBrowser->setObjectName(QStringLiteral("textBrowser"));
-        textBrowser->setGeometry(QRect(30, 30, 381, 201));
         tabWidget_PaintArea->addTab(tab, QString());
         frame = new QFrame(centralWidget);
         frame->setObjectName(QStringLiteral("frame"));
@@ -146,6 +143,9 @@ public:
         cbIsFront = new QCheckBox(frame_2);
         cbIsFront->setObjectName(QStringLiteral("cbIsFront"));
         cbIsFront->setGeometry(QRect(140, 0, 71, 21));
+        textBrowser = new QTextBrowser(frame_2);
+        textBrowser->setObjectName(QStringLiteral("textBrowser"));
+        textBrowser->setGeometry(QRect(10, 30, 471, 291));
         frame_3 = new QFrame(centralWidget);
         frame_3->setObjectName(QStringLiteral("frame_3"));
         frame_3->setGeometry(QRect(580, 370, 491, 321));

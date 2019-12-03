@@ -7,17 +7,78 @@
 
 #include <qevent.h>
 
+
+#include "vehicles/multirotor/api/MultirotorRpcLibClient.hpp"
+#include <iostream>
+#include <chrono>
+#include "positionController.h"
+#include "qout.h"
+#include "imageProcess.h"
+#include <cmath>
+#include <QImage> 
+#include <qimagereader.h>
+#include <algorithm>
+#include <QFile>
+
+#include "projectOne.h"
+
 extern Estimator estimator_thread;
 extern DroneInfo drone_info;
 extern QString text_output;
 extern QMutex qout_mutex;
 extern QOUT qout_thread;
 
-//TEMP ¡ý
-extern ImageProcess image_process_thread;
-cv::Mat down_mat;
-cv::Mat result_down;
-cv::Rect num_rect_down;
+////TEMP ¡ý
+//extern ImageProcess image_process_thread;
+//cv::Mat target_mat;
+//cv::Mat result_down;
+//cv::Rect num_rect_down;
+//std::vector<int> ids;
+//std::vector<std::vector<cv::Point2f>> corners;
+//bool res;
+//
+//msr::airlib::MultirotorRpcLibClient client123;
+//
+//ProjectOne pj1("fuck you");
+//
+//void getImg(cv::Mat & img, int type) {
+//	using namespace msr::airlib;
+//	ImageCaptureBase::ImageRequest req;
+//	std::vector<ImageCaptureBase::ImageRequest> requests;
+//	switch (type) {
+//	default:
+//	case 0:
+//		req.camera_id = 0;
+//		req.image_type = ImageCaptureBase::ImageType::Scene;
+//		req.pixels_as_float = false;
+//		requests.push_back(req);
+//		break;
+//	case 1:
+//		req.camera_id = 3;
+//		req.image_type = ImageCaptureBase::ImageType::Scene;
+//		req.pixels_as_float = false;
+//		requests.push_back(req);
+//		break;
+//	}
+//
+//	auto images = client123.simGetImages(requests);
+//	auto picData = images[0].image_data_uint8;
+//	QByteArray dataArray = QByteArray::fromRawData(reinterpret_cast<const char*>(picData.data()), picData.size());
+//	QBuffer buffer(&dataArray);
+//	QImageReader reader(&buffer);
+//	static QImage Qimg;
+//	Qimg = reader.read();
+//	{
+//		QMutexLocker data_locker(&drone_info.data_mutex);
+//		if (type == 1) {
+//			drone_info.images.down_rgb = Qimg;
+//		}
+//		else if (type == 0) {
+//			drone_info.images.front_rgb = Qimg;
+//		}
+//	}
+//	img = cv::Mat(Qimg.height(), Qimg.width(), CV_8UC4, (void*)Qimg.constBits(), Qimg.bytesPerLine());
+//}
 
 DroneCompetition::DroneCompetition(QWidget *parent)
 	: QMainWindow(parent)
@@ -26,7 +87,7 @@ DroneCompetition::DroneCompetition(QWidget *parent)
 
 	StatusPainter *painter = new StatusPainter();
 	ui.tabWidget_PaintArea->addTab(painter, "PANEL");
-	ui.tabWidget_PaintArea->setCurrentIndex(0);
+	ui.tabWidget_PaintArea->setCurrentIndex(1);
 	get_Painter_Address(painter);
 	
 	//Timer for display, 20Hz
@@ -261,6 +322,7 @@ void DroneCompetition::timer_update()
 	}
 }
 
+
 void  DroneCompetition::pushButton_FrontImgRGB_Cap_Clicked()
 {
 	save_img_front_rgb = true;
@@ -282,74 +344,74 @@ void DroneCompetition::pushButton_FrontImg_Cap_Clicked()
 }
 
 void DroneCompetition::keyPressEvent(QKeyEvent  *event) {
-	switch (event->key()) {
-	case Qt::Key_1:
-		ui.etSavePath->setText("1");
-		break;
-	case Qt::Key_2:
-		ui.etSavePath->setText("2");
-		break;
-	case Qt::Key_3:
-		ui.etSavePath->setText("3");
-		break;
-	case Qt::Key_4:
-		ui.etSavePath->setText("4");
-		break;
-	case Qt::Key_5:
-		ui.etSavePath->setText("5");
-		break;
-	case Qt::Key_6:
-		ui.etSavePath->setText("6");
-		break;
-	case Qt::Key_7:
-		ui.etSavePath->setText("7");
-		break;
-	case Qt::Key_8:
-		ui.etSavePath->setText("8");
-		break;
-	case Qt::Key_9:
-		ui.etSavePath->setText("9");
-		break;
-	case Qt::Key_0:
-		ui.etSavePath->setText("0");
-		break;
-	case Qt::Key_P:
-		ui.etSavePath->setText("10");
-		break;
-	case Qt::Key_M:
-		{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-			drone_info.images.mat_down_rgb.copyTo(down_mat);
-		}
-		//show_string(QString::number(image_process_thread.downFindRectangle_stone(down_mat, result_down, num_rect_down)));
+	return;
+	//bool res;
+	//switch (event->key()) {
+	////case Qt::Key_D:
+	////	getImg(target_mat, 1);
+	////	show_string(QString::number(target_mat.rows));
+	////	res = image_process_thread.downFindRectangle(target_mat, result_down, num_rect_down);
+	//case Qt::Key_1:
+	//	ui.etSavePath->setText("1");
+	//	break;
+	//case Qt::Key_2:
+	//	ui.etSavePath->setText("2");
+	//	break;
+	//case Qt::Key_3:
+	//	ui.etSavePath->setText("3");
+	//	break;
+	//case Qt::Key_4:
+	//	ui.etSavePath->setText("4");
+	//	break;
+	//case Qt::Key_5:
+	//	ui.etSavePath->setText("5");
+	//	break;
+	//case Qt::Key_6:
+	//	ui.etSavePath->setText("6");
+	//	break;
+	//case Qt::Key_7:
+	//	ui.etSavePath->setText("7");
+	//	break;
+	//case Qt::Key_8:
+	//	ui.etSavePath->setText("8");
+	//	break;
+	//case Qt::Key_9:
+	//	ui.etSavePath->setText("9");
+	//	break;
+	//case Qt::Key_0:
+	//	ui.etSavePath->setText("0");
+	//	break;
+	//case Qt::Key_P:
+	//	ui.etSavePath->setText("10");
+	//	break;
+	//case Qt::Key_M:
 
-		image_process_thread.downFindRectangle(down_mat, result_down, num_rect_down);
-
-		cv::imshow("down_mat", down_mat);
-		cv::waitKey(1);
-
-		cv::imshow("cut_board", result_down);
-		cv::waitKey(1);
-		break;
-	case Qt::Key_Up:
-		client.enableApiControl(true);
-		client.moveByAngleThrottle(0, 0, 0.588, 1, 50);
-		return;
-	case Qt::Key_Down:
-		client.enableApiControl(false);
-		return;
-	case Qt::Key_H:
-		client.enableApiControl(true);
-		client.moveByAngleThrottle(0, 0, 0.58, 0, 50);
-		client.hover();
-		return;
-	default:
-		return;
-	}
-	if (ui.cbIsFront->isChecked()) {
-		save_img_front_rgb = true;
-	}
-	else {
-		save_img_down_rgb = true;
-	}
+	//case Qt::Key_Up:
+	//	client.enableApiControl(true);
+	//	return;
+	//case Qt::Key_Left:
+	//	client.enableApiControl(true);
+	//	pj1.MoveToOpenLoop(-2, 0);
+	//	return;
+	//case Qt::Key_Right:
+	//	client.enableApiControl(true);
+	//	pj1.MoveToOpenLoop(2, 0);
+	//	return;
+	//case Qt::Key_Down:
+	//	client.enableApiControl(false);
+	//	return;
+	//case Qt::Key_H:
+	//	client.enableApiControl(true);
+	//	client.moveByAngleThrottle(0, 0, 0.58, 0, 50);
+	//	client.hover();
+	//	return;
+	//default:
+	//	return;
+	//}
+	//if (ui.cbIsFront->isChecked()) {
+	//	save_img_front_rgb = true;
+	//}
+	//else {
+	//	save_img_down_rgb = true;
+	//}
 }

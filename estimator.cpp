@@ -142,7 +142,7 @@ void Estimator::run()
 
 				got_data = drone_info.imu.updated;
 				got_data &= drone_info.mag.updated;
-				got_data &= drone_info.global_position.updated;
+				//got_data &= drone_info.global_position.updated;
 				got_data &= drone_info.baro.updated;
 				//只有所有数据更新后才进行估计
 			}
@@ -154,7 +154,7 @@ void Estimator::run()
 			//标志位flag置0并读取数据
 			drone_info.imu.updated = false;
 			drone_info.mag.updated = false;
-			drone_info.global_position.updated = false;
+			//drone_info.global_position.updated = false;
 			drone_info.baro.updated = false;
 			baro = drone_info.baro;
 			mag = drone_info.mag;
@@ -319,7 +319,7 @@ void Estimator::run()
 
 				got_data = drone_info.imu.updated;
 				got_data &= drone_info.mag.updated;
-				got_data &= drone_info.global_position.updated;
+				//got_data &= drone_info.global_position.updated;
 				got_data &= drone_info.baro.updated;
 			}
 			msleep(1);
@@ -328,7 +328,7 @@ void Estimator::run()
 			QMutexLocker data_locker(&drone_info.data_mutex);
 			drone_info.imu.updated = false;
 			drone_info.mag.updated = false;
-			drone_info.global_position.updated = false;
+			//drone_info.global_position.updated = false;
 			drone_info.baro.updated = false;
 			baro = drone_info.baro;
 			mag = drone_info.mag;
@@ -348,7 +348,7 @@ void Estimator::run()
 		double dt = dtTimer.elapsed() * 0.001;
 		static unsigned int counter;
 		counter++;
-		if (counter < 10) {
+		if (counter < 30) {
 			show_string("delay:" + QString::number(dt) );
 		}
 		dtTimer.restart();
@@ -697,9 +697,9 @@ void Estimator::run()
 			drone_info.attitude.angle.yaw = att_local.Euler.z;
 
 
-			drone_info.test_value.test1 = ground_x;
-			drone_info.test_value.test2 = ground_y;
-			drone_info.test_value.test3 = ground_z;
+			drone_info.test_value.test1 = att_local.Euler.x;
+			drone_info.test_value.test2 = att_local.Euler.y;
+			drone_info.test_value.test3 = att_local.Euler.z;
 
 			drone_info.degree_values_cal();
 		}

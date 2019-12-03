@@ -66,6 +66,22 @@ typedef struct vec3f_s {
 	};
 }vec3f_t;
 
+typedef struct vec3f_d {
+	union {
+		struct {
+			double R;
+			double P;
+			double Y;
+		};
+		struct {
+			double x;
+			double y;
+			double z;
+		};
+		float v[3];
+	};
+}vec3f_double;
+
 typedef struct quaternion_s {
 	union {
 		struct {

@@ -110,11 +110,15 @@ void Controller::run()
 		}
 		if (m_mode == ATTCTRL)             //姿态控制接口
 		{
+			//show_string("attctrl_mode!"+QString::number(m_throttle));
 			client.moveByAngleThrottle(m_pitch, m_roll, m_throttle, m_yaw_rate, m_duration);
+			//msleep(m_duration * 1000);
+			
 		}
 		else if(m_mode == HOVER)		   //悬停接口
 		{
 			client.hover();
+			//show_string("hover!");
 			{
 				QMutexLocker data_locker(&drone_info.data_mutex);
 				drone_info.local_position.velSet2Zero = true;

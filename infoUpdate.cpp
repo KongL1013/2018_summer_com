@@ -77,55 +77,55 @@ void IMURetriever::run()
 
 
 /* GPSRetriever */
-GPSRetriever::GPSRetriever(QString name) :b_stopped(false)
-{
-
-}
-
-GPSRetriever::~GPSRetriever()
-{
-	stop();
-	quit();
-	wait();
-}
-
-void GPSRetriever::stop()
-{
-	QMutexLocker stop_locker(&m_mutex);
-	b_stopped = true;
-}
-
-void GPSRetriever::run()
-{
-	msr::airlib::MultirotorRpcLibClient client;
-	QTime current_time;
-
-	while (true)
-	{
-		//msleep(10);
-
-		auto gps = client.getGpsLocation();
-		current_time.start();
-		long int time_stamp = current_time.msec() + current_time.second() * 1000 + (long int)current_time.minute() * 1000 * 60;
-		
-		{
-			QMutexLocker data_locker(&drone_info.data_mutex);
-
-			drone_info.global_position.lattitude = gps.latitude;
-			drone_info.global_position.longtitude = gps.longitude;
-			drone_info.global_position.gps_height = -gps.altitude; //gcy changed
-			drone_info.global_position.updated = true;
-			drone_info.global_position.time_stamp = time_stamp;
-		}
-
-		/* Stop watch dog */
-		{
-			QMutexLocker stop_locker(&m_mutex);
-			if (b_stopped)
-				break;
-		}
-	}
-}
+//GPSRetriever::GPSRetriever(QString name) :b_stopped(false)
+//{
+//
+//}
+//
+//GPSRetriever::~GPSRetriever()
+//{
+//	stop();
+//	quit();
+//	wait();
+//}
+//
+//void GPSRetriever::stop()
+//{
+//	QMutexLocker stop_locker(&m_mutex);
+//	b_stopped = true;
+//}
+//
+//void GPSRetriever::run()
+//{
+//	msr::airlib::MultirotorRpcLibClient client;
+//	QTime current_time;
+//
+//	while (true)
+//	{
+//		//msleep(10);
+//
+//		auto gps = client.getGpsLocation();
+//		current_time.start();
+//		long int time_stamp = current_time.msec() + current_time.second() * 1000 + (long int)current_time.minute() * 1000 * 60;
+//		
+//		{
+//			QMutexLocker data_locker(&drone_info.data_mutex);
+//
+//			drone_info.global_position.lattitude = gps.latitude;
+//			drone_info.global_position.longtitude = gps.longitude;
+//			drone_info.global_position.gps_height = -gps.altitude; //gcy changed
+//			drone_info.global_position.updated = true;
+//			drone_info.global_position.time_stamp = time_stamp;
+//		}
+//
+//		/* Stop watch dog */
+//		{
+//			QMutexLocker stop_locker(&m_mutex);
+//			if (b_stopped)
+//				break;
+//		}
+//	}
+//}
 
 /*BaroRetriever*/
 BaroRetriever::BaroRetriever(QString name) :b_stopped(false)

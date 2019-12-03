@@ -16,7 +16,7 @@ Estimator estimator_thread("estimator_thread");
 ProjectOne project_one_thread("project_one_thread");
 
 IMURetriever imu_thread("imu_thread");
-GPSRetriever gps_thread("gps_thread");
+//GPSRetriever gps_thread("gps_thread");
 BaroRetriever baro_thread("baro_thread");
 MagRetriever mag_thread("mag_thread");
 ImgRetriever img_thread("img_thread");
@@ -33,10 +33,10 @@ int main(int argc, char *argv[])
 	
 	project_one_thread.start();
 	imu_thread.start();
-	gps_thread.start();
+	//gps_thread.start();
 	baro_thread.start();
 	mag_thread.start();
-	img_thread.start();
+	//img_thread.start();
 	qout_thread.start();
 
 	QApplication a(argc, argv);

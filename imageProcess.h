@@ -41,7 +41,7 @@ public:
 	bool frontFindCircle(Mat &input_img, Vec3f &bigCircle);
 	bool frontFindRectangle(Mat &input_img, Rect &maxRect);
 	bool downFindTree(Mat &input_img, Mat &roi, Rect &rect);
-	bool detect_2d_coder(Mat &inputImg, Mat &roi, std::vector<int> &ids, std::vector<std::vector<cv::Point2f>> &corners);
+	bool detect_2d_coder(Mat &inputImg, Mat &roi, std::vector<int> &ids, std::vector<std::vector<cv::Point2f>> &boundary);
 	float pixelToLength(int pixel_num, float distance);
 
 
